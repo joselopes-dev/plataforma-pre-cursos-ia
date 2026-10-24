@@ -17,7 +17,8 @@ import {
 const connectionString = process.env.DATABASE_URL;
 const isProduction = process.env.NODE_ENV === 'production';
 const allowMemoryStore = process.env.ALLOW_MEMORY_STORE === 'true';
-const isRenderPostgres = connectionString?.includes('render.com');
+//const isRenderPostgres = connectionString?.includes('render.com');
+const isRenderPostgres = connectionString?.includes('render.com') || connectionString?.includes('neon.tech');
 
 let pgPool: pg.Pool | null = null;
 let isPostgresConnected = false;
@@ -28,10 +29,11 @@ if (connectionString && !connectionString.includes('localhost:5432/lms_ia')) {
   try {
     pgPool = new pg.Pool({
       connectionString,
-      ssl: isProduction || isRenderPostgres ? { rejectUnauthorized: false } : false,
+      //ssl: isProduction || isRenderPostgres ? { rejectUnauthorized: false } : false,
+      ssl: { rejectUnauthorized: false },
       max: 10,
       idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 5000,
+      connectionTimeoutMillis: 10000,
     });
 
     pgPool.query('SELECT NOW()', (err) => {
