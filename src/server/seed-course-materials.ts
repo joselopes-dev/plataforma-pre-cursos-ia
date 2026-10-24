@@ -520,71 +520,9 @@ export const ALL_DISCIPLINES_MATERIALS = [
  * Cria os materiais didáticos em PDF e TXT para todas as 20 disciplinas do Curso Técnico em IA
  */
 export function seedAllCourseMaterials() {
-  console.log('📚 Gerando materiais didáticos experimentais do curso (aguardando homologação institucional)...');
-
-  for (const disc of ALL_DISCIPLINES_MATERIALS) {
-    const fullDirPath = path.join(rootCoursesDir, disc.dir);
-    if (!fs.existsSync(fullDirPath)) {
-      fs.mkdirSync(fullDirPath, { recursive: true });
-    }
-
-    // 1. Gera o arquivo PDF com estrutura PDF 1.4 válida e tarja de aviso experimental
-    const pdfPath = path.join(fullDirPath, disc.pdfName);
-    const pdfBuffer = generateValidPDF(disc.title, 'Ambiente Experimental de Validacao Tecnica', disc.pages);
-    fs.writeFileSync(pdfPath, pdfBuffer);
-
-    // 2. Garante a existência de apostila-aula-01.pdf (material referenciado pelas aulas nos passos)
-    const aula01PdfPath = path.join(fullDirPath, 'apostila-aula-01.pdf');
-    fs.writeFileSync(aula01PdfPath, pdfBuffer);
-
-    // 2.1 Garante a existência de slides-aula-01.pdf (lâminas de aula referenciadas no Passo 2)
-    const slidesPdfPath = path.join(fullDirPath, 'slides-aula-01.pdf');
-    const slidesPages = disc.pages.map((p, idx) => ({
-      header: `LAMINA DIDATICA ${idx + 1}: ${p.header.toUpperCase()}`,
-      text: `SINTESE CONCEITUAL E DIAGRAMAS:\n${p.text}`,
-    }));
-    const slidesBuffer = generateValidPDF(`SLIDES: ${disc.title}`, 'Corpo Docente - Laminas de Aula', slidesPages);
-    fs.writeFileSync(slidesPdfPath, slidesBuffer);
-
-    // 3. Remove eventual arquivo legado com nomenclatura oficial antiga se presente
-    const legacyOfficialTxt = path.join(fullDirPath, 'material-oficial-estudo.txt');
-    if (fs.existsSync(legacyOfficialTxt)) {
-      try {
-        fs.unlinkSync(legacyOfficialTxt);
-      } catch {}
-    }
-
-    // 4. Gera a versão em texto estruturado com identificação inequívoca de material experimental
-    const txtPath = path.join(fullDirPath, 'material-estudo-experimental.txt');
-    let txtContent = `# ${disc.title.toUpperCase()}\n`;
-    txtContent += `# MATERIAL DIDÁTICO EXPERIMENTAL DE DESENVOLVIMENTO — AGUARDANDO HOMOLOGAÇÃO INSTITUCIONAL. Este conteúdo destina-se à validação técnica da plataforma e não substitui apostilas oficialmente aprovadas pela instituição.\n\n`;
-    disc.pages.forEach((p, idx) => {
-      txtContent += `--- Página ${idx + 1}: ${p.header}\n${p.text}\n\n`;
-    });
-    fs.writeFileSync(txtPath, txtContent, 'utf8');
-
-    // 5. Gera também apostila-aula-01.txt para compatibilidade e isolamento de RAG
-    const aula01TxtPath = path.join(fullDirPath, 'apostila-aula-01.txt');
-    fs.writeFileSync(aula01TxtPath, txtContent, 'utf8');
-
-    // 6. Gera o README.md da disciplina
-    const readmePath = path.join(fullDirPath, 'README.md');
-    const readmeContent = `# ${disc.title}\n\nAcervo didático local para estudo, laboratórios e suporte via Tutor IA com RAG.\n\n` +
-      `**Aviso:** Material didático experimental de desenvolvimento — aguardando homologação institucional.\n\n` +
-      `Arquivos disponíveis no diretório:\n` +
-      `- \`${disc.pdfName}\`: Apostila técnica completa em formato PDF 1.4\n` +
-      `- \`apostila-aula-01.pdf\`: Material de apoio da aula 01\n` +
-      `- \`slides-aula-01.pdf\`: Lâminas didáticas sintetizadas em PDF para aula 01\n` +
-      `- \`material-estudo-experimental.txt\`: Texto estruturado para indexação vetorial e lexical\n` +
-      `- \`apostila-aula-01.txt\`: Transcrição textual da aula 01\n`;
-    fs.writeFileSync(readmePath, readmeContent, 'utf8');
-
-    console.log(`✅ [SEED] Gerados materiais didáticos experimentais para ${disc.dir}: ${disc.pdfName}, apostila-aula-01.pdf, slides-aula-01.pdf e arquivos de texto`);
-  }
-
-  console.log('🎉 Materiais didáticos experimentais de todas as 20 disciplinas gerados com sucesso!');
+  console.log('⏭️ SEED experimental DESATIVADO - preservando materiais reais do Git');
+  return;
 }
-
 // Se executado diretamente
 if (process.argv[1] && process.argv[1].includes('seed-course-materials')) {
   seedAllCourseMaterials();
