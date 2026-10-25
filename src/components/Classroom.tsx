@@ -579,7 +579,7 @@ export const Classroom: React.FC<ClassroomProps> = ({
         controls
         playsInline
         className="w-full h-full"
-        src="/cursos/modulo-1/01-fundamentos/video-aula-01.mp4"
+        src={`${(currentLesson as any).localMaterialPath}/video-aula-01.mp4`}
       />
     </div>
 
