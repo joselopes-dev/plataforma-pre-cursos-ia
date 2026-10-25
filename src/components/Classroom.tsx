@@ -657,142 +657,150 @@ export const Classroom: React.FC<ClassroomProps> = ({
                 )}
 
                 {/* ETAPA 3: MATERIAL DIDÁTICO EM PDF */}
-{activeStepNumber === 3 && (
-  <div className="space-y-4">
-    <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-      <div>
-        <span className="text-xs font-bold text-[#006633] uppercase">Etapa 03 de 05</span>
-        <h3 className="text-lg font-bold text-gray-900">Material Didático em PDF (Apostila Técnica)</h3>
-      </div>
-      <span className="text-xs font-semibold text-gray-500">Carga estimada: 30 min</span>
-    </div>
+{/* ETAPA 3: MATERIAL DIDÁTICO EM PDF */}
+{activeStepNumber === 3 && (() => {
+  const lessonNumber = (lessons.findIndex((l) => l.id === currentLesson.id) + 1) || 1;
+  const padded = String(lessonNumber).padStart(2, '0');
 
-    {/* PDF 1 - Apostila Principal */}
-    <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 space-y-4">
-      <div className="flex items-start space-x-3">
-        <FileText className="w-6 h-6 text-[#006633] mt-1 shrink-0" />
-        <div className="space-y-1">
-          <h4 className="font-bold text-sm text-gray-900">Apostila Completa da Aula</h4>
-          <p className="text-xs text-gray-600 leading-relaxed">
-            Contém o aprofundamento teórico, tutoriais práticos em Python, referências bibliográficas e exercícios de fixação.
-          </p>
-          <p className="text-[11px] font-mono text-emerald-800 pt-1">
-            {discipline.localMaterialPath}/apostila-aula-01.pdf
-          </p>
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+        <div>
+          <span className="text-xs font-bold text-[#006633] uppercase">Etapa 03 de 05</span>
+          <h3 className="text-lg font-bold text-gray-900">Material Didático em PDF (Apostila Técnica)</h3>
+        </div>
+        <span className="text-xs font-semibold text-gray-500">Carga estimada: 30 min</span>
+      </div>
+
+      {/* PDF 1 - Apostila Principal */}
+      <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 space-y-4">
+        <div className="flex items-start space-x-3">
+          <FileText className="w-6 h-6 text-[#006633] mt-1 shrink-0" />
+          <div className="space-y-1">
+            <h4 className="font-bold text-sm text-gray-900">
+              Apostila Completa da Aula {padded}
+            </h4>
+            <p className="text-xs text-gray-600 leading-relaxed">
+              Contém o aprofundamento teórico, tutoriais práticos em Python, referências bibliográficas e exercícios de fixação.
+            </p>
+            <p className="text-[11px] font-mono text-emerald-800 pt-1">
+              {discipline.localMaterialPath}/apostila-aula-{padded}.pdf
+            </p>
+          </div>
+        </div>
+
+        <div className="pt-1">
+          <a
+            href={`${discipline.localMaterialPath}/apostila-aula-${padded}.pdf`}
+            target="_blank"
+            rel="noreferrer"
+            download
+            className="inline-flex items-center space-x-2 text-xs bg-[#006633] hover:bg-[#004d25] text-white px-3.5 py-2 rounded-lg font-bold transition-colors shadow-xs cursor-pointer"
+          >
+            <Download className="w-3.5 h-3.5 text-white" />
+            <span>Baixar Apostila Técnica em PDF (apostila-aula-{padded}.pdf)</span>
+          </a>
+        </div>
+
+        <div className="bg-white p-4 rounded-lg border border-gray-200 text-xs text-gray-700 space-y-2">
+          <p className="font-bold text-gray-900">Tópicos Abordados no Texto:</p>
+          <ul className="list-disc list-inside space-y-1 text-gray-600 pl-1">
+            <li>Princípios e fundamentos da disciplina {discipline.title}</li>
+            <li>Competências técnicas oficiais: {discipline.competencies?.join(', ')}</li>
+          </ul>
         </div>
       </div>
 
-      <div className="pt-1">
-        <a
-          href={`${discipline.localMaterialPath}/apostila-aula-01.pdf`}
-          target="_blank"
-          rel="noreferrer"
-          download
-          className="inline-flex items-center space-x-2 text-xs bg-[#006633] hover:bg-[#004d25] text-white px-3.5 py-2 rounded-lg font-bold transition-colors shadow-xs cursor-pointer"
-        >
-          <Download className="w-3.5 h-3.5 text-white" />
-          <span>Baixar Apostila Técnica em PDF (apostila-aula-01.pdf)</span>
-        </a>
-      </div>
+      {/* PDF 2 - Material Complementar */}
+      <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 space-y-4">
+        <div className="flex items-start space-x-3">
+          <FileText className="w-6 h-6 text-[#006633] mt-1 shrink-0" />
+          <div className="space-y-1">
+            <h4 className="font-bold text-sm text-gray-900">Material Complementar - Exemplos Práticos</h4>
+            <p className="text-xs text-gray-600 leading-relaxed">
+              Coleção de exemplos práticos, códigos comentados e casos de uso reais relacionados ao conteúdo da aula.
+            </p>
+            <p className="text-[11px] font-mono text-emerald-800 pt-1">
+              {discipline.localMaterialPath}/material-complementar-{padded}.pdf
+            </p>
+          </div>
+        </div>
 
-      <div className="bg-white p-4 rounded-lg border border-gray-200 text-xs text-gray-700 space-y-2">
-        <p className="font-bold text-gray-900">Tópicos Abordados no Texto:</p>
-        <ul className="list-disc list-inside space-y-1 text-gray-600 pl-1">
-          <li>Princípios e fundamentos da disciplina {discipline.title}</li>
-          <li>Competências técnicas oficiais: {discipline.competencies.join(', ')}</li>
-        </ul>
-      </div>
-    </div>
+        <div className="pt-1">
+          <a
+            href={`${discipline.localMaterialPath}/material-complementar-${padded}.pdf`}
+            target="_blank"
+            rel="noreferrer"
+            download
+            className="inline-flex items-center space-x-2 text-xs bg-[#006633] hover:bg-[#004d25] text-white px-3.5 py-2 rounded-lg font-bold transition-colors shadow-xs cursor-pointer"
+          >
+            <Download className="w-3.5 h-3.5 text-white" />
+            <span>Baixar Material Complementar (material-complementar-{padded}.pdf)</span>
+          </a>
+        </div>
 
-    {/* PDF 2 - Complementar */}
-    <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 space-y-4">
-      <div className="flex items-start space-x-3">
-        <FileText className="w-6 h-6 text-[#006633] mt-1 shrink-0" />
-        <div className="space-y-1">
-          <h4 className="font-bold text-sm text-gray-900">Material Complementar - Exemplos Práticos</h4>
-          <p className="text-xs text-gray-600 leading-relaxed">
-            Coleção de exemplos práticos, códigos comentados e casos de uso reais relacionados ao conteúdo da aula.
-          </p>
-          <p className="text-[11px] font-mono text-emerald-800 pt-1">
-            {discipline.localMaterialPath}/apostila-ferramentas-de-programacao.pdf
-          </p>
+        <div className="bg-white p-4 rounded-lg border border-gray-200 text-xs text-gray-700 space-y-2">
+          <p className="font-bold text-gray-900">Conteúdo do Material:</p>
+          <ul className="list-disc list-inside space-y-1 text-gray-600 pl-1">
+            <li>Exemplos de código comentados</li>
+            <li>Casos de uso práticos da disciplina</li>
+          </ul>
         </div>
       </div>
 
-      <div className="pt-1">
-        <a
-          href={`${discipline.localMaterialPath}/apostila-ferramentas-de-programacao.pdf`}
-          target="_blank"
-          rel="noreferrer"
-          download
-          className="inline-flex items-center space-x-2 text-xs bg-[#006633] hover:bg-[#004d25] text-white px-3.5 py-2 rounded-lg font-bold transition-colors shadow-xs cursor-pointer"
-        >
-          <Download className="w-3.5 h-3.5 text-white" />
-          <span>Baixar Material Complementar (apostila-ferramentas-de-programacao.pdf)</span>
-        </a>
-      </div>
+      {/* PDF 3 - Referências e Exercícios */}
+      <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 space-y-4">
+        <div className="flex items-start space-x-3">
+          <FileText className="w-6 h-6 text-[#006633] mt-1 shrink-0" />
+          <div className="space-y-1">
+            <h4 className="font-bold text-sm text-gray-900">Referências Bibliográficas e Exercícios</h4>
+            <p className="text-xs text-gray-600 leading-relaxed">
+              Lista de referências recomendadas, artigos e exercícios adicionais para aprofundamento.
+            </p>
+            <p className="text-[11px] font-mono text-emerald-800 pt-1">
+              {discipline.localMaterialPath}/referencias-exercicios-{padded}.pdf
+            </p>
+          </div>
+        </div>
 
-      <div className="bg-white p-4 rounded-lg border border-gray-200 text-xs text-gray-700 space-y-2">
-        <p className="font-bold text-gray-900">Conteúdo do Material:</p>
-        <ul className="list-disc list-inside space-y-1 text-gray-600 pl-1">
-          <li>Exemplos de código comentados</li>
-          <li>Casos de uso práticos da disciplina</li>
-        </ul>
-      </div>
-    </div>
+        <div className="pt-1">
+          <a
+            href={`${discipline.localMaterialPath}/referencias-exercicios-${padded}.pdf`}
+            target="_blank"
+            rel="noreferrer"
+            download
+            className="inline-flex items-center space-x-2 text-xs bg-[#006633] hover:bg-[#004d25] text-white px-3.5 py-2 rounded-lg font-bold transition-colors shadow-xs cursor-pointer"
+          >
+            <Download className="w-3.5 h-3.5 text-white" />
+            <span>Baixar Referências e Exercícios (referencias-exercicios-{padded}.pdf)</span>
+          </a>
+        </div>
 
-    {/* PDF 3 - Referências e Exercícios */}
-    <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 space-y-4">
-      <div className="flex items-start space-x-3">
-        <FileText className="w-6 h-6 text-[#006633] mt-1 shrink-0" />
-        <div className="space-y-1">
-          <h4 className="font-bold text-sm text-gray-900">Referências Bibliográficas e Exercícios</h4>
-          <p className="text-xs text-gray-600 leading-relaxed">
-            Lista de referências recomendadas, artigos e exercícios adicionais para aprofundamento.
-          </p>
-          <p className="text-[11px] font-mono text-emerald-800 pt-1">
-            {discipline.localMaterialPath}/apostila-sistemas-operacionais-01.pdf
-          </p>
+        <div className="bg-white p-4 rounded-lg border border-gray-200 text-xs text-gray-700 space-y-2">
+          <p className="font-bold text-gray-900">Conteúdo do Material:</p>
+          <ul className="list-disc list-inside space-y-1 text-gray-600 pl-1">
+            <li>Referências bibliográficas oficiais</li>
+            <li>Exercícios extras de fixação</li>
+          </ul>
         </div>
       </div>
 
-      <div className="pt-1">
-        <a
-          href={`${discipline.localMaterialPath}/apostila-sistemas-operacionais-01.pdf`}
-          target="_blank"
-          rel="noreferrer"
-          download
-          className="inline-flex items-center space-x-2 text-xs bg-[#006633] hover:bg-[#004d25] text-white px-3.5 py-2 rounded-lg font-bold transition-colors shadow-xs cursor-pointer"
-        >
-          <Download className="w-3.5 h-3.5 text-white" />
-          <span>Baixar Referências e Exercícios (apostila-sistemas-operacionais-01.pdf)</span>
-        </a>
+      <div className="text-xs text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-200">
+        <p className="font-bold text-gray-800">Critério de Conclusão da Etapa 3:</p>
+        <p>Leitura técnica do texto da apostila para habilitação do Teste de Fixação (Passo 4).</p>
       </div>
 
-      <div className="bg-white p-4 rounded-lg border border-gray-200 text-xs text-gray-700 space-y-2">
-        <p className="font-bold text-gray-900">Conteúdo do Material:</p>
-        <ul className="list-disc list-inside space-y-1 text-gray-600 pl-1">
-          <li>Referências bibliográficas oficiais</li>
-          <li>Exercícios extras de fixação</li>
-        </ul>
-      </div>
+      <button
+        disabled={actionLoading}
+        onClick={() => handleCompleteStep(3)}
+        className="w-full bg-[#006633] hover:bg-[#004d25] text-white font-bold py-3 rounded-xl text-xs transition-colors flex items-center justify-center space-x-2 shadow-xs cursor-pointer"
+      >
+        <CheckCircle2 className="w-4 h-4" />
+        <span>{isStepCompleted(3) ? 'Etapa 3 Concluída (Revalidar)' : 'Confirmar Leitura e Liberar Teste de Fixação'}</span>
+      </button>
     </div>
-
-    <div className="text-xs text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-200">
-      <p className="font-bold text-gray-800">Critério de Conclusão da Etapa 3:</p>
-      <p>Leitura técnica do texto da apostila para habilitação do Teste de Fixação (Passo 4).</p>
-    </div>
-
-    <button
-      disabled={actionLoading}
-      onClick={() => handleCompleteStep(3)}
-      className="w-full bg-[#006633] hover:bg-[#004d25] text-white font-bold py-3 rounded-xl text-xs transition-colors flex items-center justify-center space-x-2 shadow-xs cursor-pointer"
-    >
-      <CheckCircle2 className="w-4 h-4" />
-      <span>{isStepCompleted(3) ? 'Etapa 3 Concluída (Revalidar)' : 'Confirmar Leitura e Liberar Teste de Fixação'}</span>
-    </button>
-  </div>
-)}
+  );
+})()}
 
                 {/* ETAPA 4: TESTE DE FIXAÇÃO DA AULA (3 QUESTÕES) */}
                 {activeStepNumber === 4 && (
