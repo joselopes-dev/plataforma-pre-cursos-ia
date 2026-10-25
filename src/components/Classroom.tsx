@@ -575,11 +575,11 @@ export const Classroom: React.FC<ClassroomProps> = ({
 
     <div className="aspect-video bg-black rounded-xl overflow-hidden relative">
       <video
-        key={(currentLesson as any).localMaterialPath}
+        key={`${discipline.id}-${currentLesson.id}`}
         controls
         playsInline
         className="w-full h-full"
-        src={`${(currentLesson as any).localMaterialPath}/video-aula-01.mp4`}
+        src={`/cursos/${discipline.id}/${currentLesson.id}/video-aula-01.mp4`}
       />
     </div>
 
