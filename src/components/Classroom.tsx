@@ -564,7 +564,7 @@ export const Classroom: React.FC<ClassroomProps> = ({
               <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs min-h-[420px] flex flex-col justify-between">
                 
                 {/* ETAPA 1: VIDEO */}
-{activeStepNumber === 0 && (
+{true && (
   <div className="space-y-4">
     <div className="flex items-center justify-between border-b border-gray-100 pb-3">
       <div>
