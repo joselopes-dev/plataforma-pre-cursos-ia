@@ -562,48 +562,43 @@ export const Classroom: React.FC<ClassroomProps> = ({
 
               {/* CONTEÚDO DA ETAPA ATIVA DA AULA */}
               <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs min-h-[420px] flex flex-col justify-between">
-                {/* ETAPA 1: VÍDEO */}
-                {activeStepNumber === 1 && (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-                      <div>
-                        <span className="text-xs font-bold text-[#006633] uppercase">Etapa 01 de 05</span>
-                        <h3 className="text-lg font-bold text-gray-900">Vídeo-Aula Expositiva</h3>
-                      </div>
-                      <span className="text-xs font-semibold text-gray-500">Carga estimada: 25 min</span>
-                    </div>
+                
+                {/* ETAPA 1: VIDEO */}
+{activeStepNumber === 1 && (
+  <div className="space-y-4">
+    <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+      <div>
+        <h3 className="text-lg font-bold text-gray-900">Vídeo-Aula Expositiva</h3>
+        <span className="text-xs font-semibold text-gray-500">Carga estimada: 25 min</span>
+      </div>
+    </div>
 
-                    <div className="aspect-video bg-gray-900 rounded-xl overflow-hidden relative flex flex-col items-center justify-center text-white shadow-inner">
-                      <div className="absolute inset-0 bg-radial from-emerald-950/40 to-black/80"></div>
-                      <div className="relative z-10 text-center space-y-3 max-w-md px-4">
-                        <div className="w-14 h-14 rounded-full bg-emerald-600/90 hover:bg-emerald-500 text-white flex items-center justify-center mx-auto shadow-lg transition-transform hover:scale-105 cursor-pointer">
-                          <Play className="w-6 h-6 ml-1 text-white" />
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-sm text-white">{currentLesson.title}</h4>
-                          <div className="mt-2 inline-flex items-center space-x-1.5 px-3 py-1 rounded-md bg-amber-500/20 border border-amber-500/30 text-amber-200 text-[11px] font-medium">
-                            <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                            <span>Gravação audiovisual em planejamento instrucional • Roteiro e conceitos na Apostila (Passo 3)</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+    <div className="aspect-video bg-black rounded-xl overflow-hidden relative">
+      <video
+        key={(currentLesson as any).localMaterialPath}
+        controls
+        playsInline
+        className="w-full h-full"
+        src={`${(currentLesson as any).localMaterialPath}/video.mp4`}
+      />
+    </div>
 
-                    <div className="text-xs text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-200">
-                      <p className="font-bold text-gray-800">Critério de Conclusão da Etapa 1:</p>
-                      <p>Acompanhar a introdução conceitual da aula e confirmar o avanço para as lâminas (Passo 2).</p>
-                    </div>
+    <div className="text-xs text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-200">
+      <p className="font-bold text-gray-800">Critério de Conclusão da Etapa 1:</p>
+      <p>Acompanhar a introdução conceitual da aula e confirmar o avanço para as lâminas (Passo 2).</p>
+    </div>
 
-                    <button
-                      disabled={actionLoading}
-                      onClick={() => handleCompleteStep(1)}
-                      className="w-full bg-[#006633] hover:bg-[#004d25] text-white font-bold py-3 rounded-xl text-xs transition-colors flex items-center justify-center space-x-2 shadow-xs cursor-pointer"
-                    >
-                      <CheckCircle2 className="w-4 h-4" />
-                      <span>{isStepCompleted(1) ? 'Etapa 1 Concluída (Revalidar)' : 'Concluir Introdução e Desbloquear Slides'}</span>
-                    </button>
-                  </div>
-                )}
+    <button
+      disabled={actionLoading}
+      onClick={() => handleCompleteStep(1)}
+      className="w-full bg-[#006633] hover:bg-[#004d25] text-white font-bold py-3 rounded-xl text-xs transition"
+    >
+      <span>{isStepCompleted(1) ? 'Etapa 1 Concluída (Revalidar)' : 'Concluir Introdução e Desbloquear Slides'}</span>
+    </button>
+  </div>
+)}
+
+{/* ETAPA 2: SLIDES */}
 
                 {/* ETAPA 2: SLIDES */}
                 {activeStepNumber === 2 && (
