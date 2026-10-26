@@ -111,9 +111,14 @@ export const Classroom: React.FC<ClassroomProps> = ({
   const { discipline, lessons } = disciplineData;
   const currentLesson = lessons.find((l) => l.id === activeLessonId) || lessons[0];
 
-  // Número da aula atual (01, 02, 03...) baseado na posição da lição
-  const lessonNumber = (lessons.findIndex((l) => l.id === currentLesson.id) + 1) || 1;
-  const padded = String(lessonNumber).padStart(2, '0');
+  // Extrai o número da pasta (01, 02, 03...) a partir do localMaterialPath
+  // Ex: "/cursos/modulo-1/02-logica" → "02"
+  const getPaddedFromPath = (path: string): string => {
+    const folder = path.split('/').filter(Boolean).pop() || '';
+    const match = folder.match(/^(\d+)/);
+    return match ? match[1].padStart(2, '0') : '01';
+  };
+  const padded = getPaddedFromPath(discipline.localMaterialPath || '');
 
   // Verifica se todas as aulas da disciplina foram concluídas para liberar a Avaliação Final de 10 Questões
   const areAllLessonsCompleted = lessons.every((l) => Boolean(progressMap[`${l.id}:5`]));
@@ -655,7 +660,7 @@ export const Classroom: React.FC<ClassroomProps> = ({
                   </div>
                 )}
 
-                {/* ETAPA 3: MATERIAL DIDÁTICO EM PDF (versão dinâmica e limpa) */}
+                {/* ETAPA 3: MATERIAL DIDÁTICO EM PDF */}
                 {activeStepNumber === 3 && (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between border-b border-gray-100 pb-3">
