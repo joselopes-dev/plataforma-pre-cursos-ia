@@ -657,10 +657,12 @@ export const Classroom: React.FC<ClassroomProps> = ({
                 )}
 
                 {/* ETAPA 3: MATERIAL DIDÁTICO EM PDF */}
-{/* ETAPA 3: MATERIAL DIDÁTICO EM PDF */}
+
+                {/* ETAPA 3: MATERIAL DIDÁTICO EM PDF */}
 {activeStepNumber === 3 && (() => {
   const lessonNumber = (lessons.findIndex((l) => l.id === currentLesson.id) + 1) || 1;
   const padded = String(lessonNumber).padStart(2, '0');
+  const basePath = `/cursos/${disciplineId}/${currentLesson.id}`;
 
   return (
     <div className="space-y-4">
@@ -684,17 +686,16 @@ export const Classroom: React.FC<ClassroomProps> = ({
               Contém o aprofundamento teórico, tutoriais práticos em Python, referências bibliográficas e exercícios de fixação.
             </p>
             <p className="text-[11px] font-mono text-emerald-800 pt-1">
-              {discipline.localMaterialPath}/apostila-aula-{padded}.pdf
+              {basePath}/apostila-aula-{padded}.pdf
             </p>
           </div>
         </div>
 
         <div className="pt-1">
           <a
-            href={`${discipline.localMaterialPath}/apostila-aula-${padded}.pdf`}
+            href={`${basePath}/apostila-aula-${padded}.pdf`}
             target="_blank"
             rel="noreferrer"
-            download
             className="inline-flex items-center space-x-2 text-xs bg-[#006633] hover:bg-[#004d25] text-white px-3.5 py-2 rounded-lg font-bold transition-colors shadow-xs cursor-pointer"
           >
             <Download className="w-3.5 h-3.5 text-white" />
@@ -721,30 +722,21 @@ export const Classroom: React.FC<ClassroomProps> = ({
               Coleção de exemplos práticos, códigos comentados e casos de uso reais relacionados ao conteúdo da aula.
             </p>
             <p className="text-[11px] font-mono text-emerald-800 pt-1">
-              {discipline.localMaterialPath}/material-complementar-{padded}.pdf
+              {basePath}/material-complementar-{padded}.pdf
             </p>
           </div>
         </div>
 
         <div className="pt-1">
           <a
-            href={`${discipline.localMaterialPath}/material-complementar-${padded}.pdf`}
+            href={`${basePath}/material-complementar-${padded}.pdf`}
             target="_blank"
             rel="noreferrer"
-            download
             className="inline-flex items-center space-x-2 text-xs bg-[#006633] hover:bg-[#004d25] text-white px-3.5 py-2 rounded-lg font-bold transition-colors shadow-xs cursor-pointer"
           >
             <Download className="w-3.5 h-3.5 text-white" />
             <span>Baixar Material Complementar (material-complementar-{padded}.pdf)</span>
           </a>
-        </div>
-
-        <div className="bg-white p-4 rounded-lg border border-gray-200 text-xs text-gray-700 space-y-2">
-          <p className="font-bold text-gray-900">Conteúdo do Material:</p>
-          <ul className="list-disc list-inside space-y-1 text-gray-600 pl-1">
-            <li>Exemplos de código comentados</li>
-            <li>Casos de uso práticos da disciplina</li>
-          </ul>
         </div>
       </div>
 
@@ -758,30 +750,21 @@ export const Classroom: React.FC<ClassroomProps> = ({
               Lista de referências recomendadas, artigos e exercícios adicionais para aprofundamento.
             </p>
             <p className="text-[11px] font-mono text-emerald-800 pt-1">
-              {discipline.localMaterialPath}/referencias-exercicios-{padded}.pdf
+              {basePath}/referencias-exercicios-{padded}.pdf
             </p>
           </div>
         </div>
 
         <div className="pt-1">
           <a
-            href={`${discipline.localMaterialPath}/referencias-exercicios-${padded}.pdf`}
+            href={`${basePath}/referencias-exercicios-${padded}.pdf`}
             target="_blank"
             rel="noreferrer"
-            download
             className="inline-flex items-center space-x-2 text-xs bg-[#006633] hover:bg-[#004d25] text-white px-3.5 py-2 rounded-lg font-bold transition-colors shadow-xs cursor-pointer"
           >
             <Download className="w-3.5 h-3.5 text-white" />
             <span>Baixar Referências e Exercícios (referencias-exercicios-{padded}.pdf)</span>
           </a>
-        </div>
-
-        <div className="bg-white p-4 rounded-lg border border-gray-200 text-xs text-gray-700 space-y-2">
-          <p className="font-bold text-gray-900">Conteúdo do Material:</p>
-          <ul className="list-disc list-inside space-y-1 text-gray-600 pl-1">
-            <li>Referências bibliográficas oficiais</li>
-            <li>Exercícios extras de fixação</li>
-          </ul>
         </div>
       </div>
 
@@ -801,6 +784,7 @@ export const Classroom: React.FC<ClassroomProps> = ({
     </div>
   );
 })()}
+
 
                 {/* ETAPA 4: TESTE DE FIXAÇÃO DA AULA (3 QUESTÕES) */}
                 {activeStepNumber === 4 && (
