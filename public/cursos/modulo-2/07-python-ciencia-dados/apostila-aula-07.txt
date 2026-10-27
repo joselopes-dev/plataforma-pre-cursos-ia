@@ -1,8 +1,0 @@
-CD-201: Python para Ciencia de Dados
-====================================
-
---- Página 1 ---
-Pandas e Visualizacao
-
-DataFrames, Matplotlib Seaborn, Pipeline ColumnTransformer.
-

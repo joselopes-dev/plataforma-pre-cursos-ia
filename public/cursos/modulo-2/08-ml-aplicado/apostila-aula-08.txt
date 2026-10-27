@@ -1,8 +1,0 @@
-MLA-202: Machine Learning Aplicado
-==================================
-
---- Página 1 ---
-Modelos
-
-Regressao, Random Forest, XGBoost, SVM, KMeans, F1 ROC AUC.
-

@@ -1,8 +1,0 @@
-IA-106: Fundamentos da IA
-=========================
-
---- Página 1 ---
-Historia e Taxonomia
-
-Turing, Dartmouth, Supervisionado, Nao Supervisionado, Reforco.
-

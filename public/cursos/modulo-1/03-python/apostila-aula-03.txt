@@ -1,8 +1,0 @@
-PYTHON-103: Python Aplicado a IA
-================================
-
---- Página 1 ---
-Python Cientifico
-
-Listas, dicts, NumPy ndarray vetorizado, Pandas DataFrame, OOP fit predict.
-

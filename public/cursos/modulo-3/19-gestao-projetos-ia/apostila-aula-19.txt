@@ -1,8 +1,0 @@
-GP-307: Gestao de Projetos IA
-=============================
-
---- Página 1 ---
-Gestao
-
-Agile CRISP-DM KPIs OKRs riscos.
-

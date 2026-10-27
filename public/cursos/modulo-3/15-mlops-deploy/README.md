@@ -7,10 +7,8 @@ Pasta: `modulo-3/15-mlops-deploy`
 - `video-aula-15.mp4` — Vídeo-aula expositiva
 - `slides-aula-15.pdf` — Lâminas de apresentação
 - `apostila-aula-15.pdf` — Apostila técnica completa
-- `apostila-aula-15.txt` — Versão texto da apostila
 - `material-complementar-15.pdf` — Exemplos práticos
 - `referencias-exercicios-15.pdf` — Referências e exercícios
-- `material-estudo-experimental15.txt` — Roteiro experimental
 
 ## Pré-requisitos
 

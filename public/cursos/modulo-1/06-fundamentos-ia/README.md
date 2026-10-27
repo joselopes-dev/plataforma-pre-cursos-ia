@@ -7,10 +7,8 @@ Pasta: `modulo-1/06-fundamentos-ia`
 - `video-aula-06.mp4` — Vídeo-aula expositiva
 - `slides-aula-06.pdf` — Lâminas de apresentação
 - `apostila-aula-06.pdf` — Apostila técnica completa
-- `apostila-aula-06.txt` — Versão texto da apostila
 - `material-complementar-06.pdf` — Exemplos práticos
 - `referencias-exercicios-06.pdf` — Referências e exercícios
-- `material-estudo-experimental06.txt` — Roteiro experimental
 
 ## Pré-requisitos
 

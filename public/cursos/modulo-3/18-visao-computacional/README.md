@@ -7,10 +7,8 @@ Pasta: `modulo-3/18-visao-computacional`
 - `video-aula-18.mp4` — Vídeo-aula expositiva
 - `slides-aula-18.pdf` — Lâminas de apresentação
 - `apostila-aula-18.pdf` — Apostila técnica completa
-- `apostila-aula-18.txt` — Versão texto da apostila
 - `material-complementar-18.pdf` — Exemplos práticos
 - `referencias-exercicios-18.pdf` — Referências e exercícios
-- `material-estudo-experimental18.txt` — Roteiro experimental
 
 ## Pré-requisitos
 

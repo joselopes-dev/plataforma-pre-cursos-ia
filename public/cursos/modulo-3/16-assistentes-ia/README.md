@@ -7,10 +7,8 @@ Pasta: `modulo-3/16-assistentes-ia`
 - `video-aula-16.mp4` — Vídeo-aula expositiva
 - `slides-aula-16.pdf` — Lâminas de apresentação
 - `apostila-aula-16.pdf` — Apostila técnica completa
-- `apostila-aula-16.txt` — Versão texto da apostila
 - `material-complementar-16.pdf` — Exemplos práticos
 - `referencias-exercicios-16.pdf` — Referências e exercícios
-- `material-estudo-experimental16.txt` — Roteiro experimental
 
 ## Pré-requisitos
 

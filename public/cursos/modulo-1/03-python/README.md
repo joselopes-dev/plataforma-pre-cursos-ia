@@ -7,10 +7,8 @@ Pasta: `modulo-1/03-python`
 - `video-aula-03.mp4` — Vídeo-aula expositiva
 - `slides-aula-03.pdf` — Lâminas de apresentação
 - `apostila-aula-03.pdf` — Apostila técnica completa
-- `apostila-aula-03.txt` — Versão texto da apostila
 - `material-complementar-03.pdf` — Exemplos práticos
 - `referencias-exercicios-03.pdf` — Referências e exercícios
-- `material-estudo-experimental03.txt` — Roteiro experimental
 
 ## Pré-requisitos
 

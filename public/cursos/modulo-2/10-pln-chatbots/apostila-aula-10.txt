@@ -1,8 +1,0 @@
-PLN-204: PLN e Chatbots
-=======================
-
---- Página 1 ---
-PLN
-
-TFIDF Word2Vec intents NER BLEU.
-

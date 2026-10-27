@@ -1,8 +1,0 @@
-LOG-102: Logica de Programacao
-==============================
-
---- Página 1 ---
-Big-O e Estruturas
-
-O1 OlogN NlogN, vetores, matrizes, funcoes puras.
-

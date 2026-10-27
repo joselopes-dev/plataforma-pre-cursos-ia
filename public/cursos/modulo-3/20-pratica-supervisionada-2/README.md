@@ -7,10 +7,8 @@ Pasta: `modulo-3/20-pratica-supervisionada-2`
 - `video-aula-20.mp4` — Vídeo-aula expositiva
 - `slides-aula-20.pdf` — Lâminas de apresentação
 - `apostila-aula-20.pdf` — Apostila técnica completa
-- `apostila-aula-20.txt` — Versão texto da apostila
 - `material-complementar-20.pdf` — Exemplos práticos
 - `referencias-exercicios-20.pdf` — Referências e exercícios
-- `material-estudo-experimental20.txt` — Roteiro experimental
 
 ## Pré-requisitos
 

@@ -7,10 +7,8 @@ Pasta: `modulo-1/01-fundamentos`
 - `video-aula-01.mp4` — Vídeo-aula expositiva
 - `slides-aula-01.pdf` — Lâminas de apresentação
 - `apostila-aula-01.pdf` — Apostila técnica completa
-- `apostila-aula-01.txt` — Versão texto da apostila
 - `material-complementar-01.pdf` — Exemplos práticos
 - `referencias-exercicios-01.pdf` — Referências e exercícios
-- `material-estudo-experimental.txt` — Roteiro experimental
 
 ## Pré-requisitos
 

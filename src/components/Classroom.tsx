@@ -676,6 +676,9 @@ export const Classroom: React.FC<ClassroomProps> = ({
                 )}
 
                 {/* ETAPA 3: MATERIAL DIDÁTICO EM PDF + TXT + README */}
+                // ... mantém todos os imports e toda a lógica até a ETAPA 3 igual
+
+                {/* ETAPA 3: MATERIAL DIDÁTICO EM PDF + README - VERSÃO LIMPA */}
                 {activeStepNumber === 3 && (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between border-b border-gray-100 pb-3">
@@ -691,38 +694,15 @@ export const Classroom: React.FC<ClassroomProps> = ({
                       <div className="flex items-start space-x-3">
                         <FileText className="w-6 h-6 text-[#006633] mt-1 shrink-0" />
                         <div className="space-y-1">
-                          <h4 className="font-bold text-sm text-gray-900">
-                            Apostila Completa da Aula {padded}
-                          </h4>
-                          <p className="text-xs text-gray-600 leading-relaxed">
-                            Contém o aprofundamento teórico, tutoriais práticos em Python, referências bibliográficas e exercícios de fixação.
-                          </p>
-                          <p className="text-[11px] font-mono text-emerald-800 pt-1">
-                            {materialBase}/apostila-aula-{padded}.pdf
-                          </p>
+                          <h4 className="font-bold text-sm text-gray-900">Apostila Completa da Aula {padded}</h4>
+                          <p className="text-xs text-gray-600">Contém o aprofundamento teórico, tutoriais práticos em Python e referências.</p>
+                          <p className="text-[11px] font-mono text-emerald-800">{materialBase}/apostila-aula-{padded}.pdf</p>
                         </div>
                       </div>
-
-                      <div className="pt-1">
-                        <a
-                          href={`${materialBase}/apostila-aula-${padded}.pdf`}
-                          target="_blank"
-                          rel="noreferrer"
-                          download
-                          className="inline-flex items-center space-x-2 text-xs bg-[#006633] hover:bg-[#004d25] text-white px-3.5 py-2 rounded-lg font-bold transition-colors shadow-xs cursor-pointer"
-                        >
-                          <Download className="w-3.5 h-3.5 text-white" />
-                          <span>Baixar Apostila Técnica em PDF (apostila-aula-{padded}.pdf)</span>
-                        </a>
-                      </div>
-
-                      <div className="bg-white p-4 rounded-lg border border-gray-200 text-xs text-gray-700 space-y-2">
-                        <p className="font-bold text-gray-900">Tópicos Abordados no Texto:</p>
-                        <ul className="list-disc list-inside space-y-1 text-gray-600 pl-1">
-                          <li>Princípios e fundamentos da disciplina {discipline.title}</li>
-                          <li>Competências técnicas oficiais: {discipline.competencies?.join(', ')}</li>
-                        </ul>
-                      </div>
+                      <a href={`${materialBase}/apostila-aula-${padded}.pdf`} target="_blank" rel="noreferrer" download
+                        className="inline-flex items-center space-x-2 text-xs bg-[#006633] hover:bg-[#004d25] text-white px-3.5 py-2 rounded-lg font-bold">
+                        <Download className="w-3.5 h-3.5" /><span>Baixar Apostila (PDF)</span>
+                      </a>
                     </div>
 
                     {/* PDF 2 - Material Complementar */}
@@ -730,36 +710,14 @@ export const Classroom: React.FC<ClassroomProps> = ({
                       <div className="flex items-start space-x-3">
                         <FileText className="w-6 h-6 text-[#006633] mt-1 shrink-0" />
                         <div className="space-y-1">
-                          <h4 className="font-bold text-sm text-gray-900">Material Complementar - Exemplos Práticos</h4>
-                          <p className="text-xs text-gray-600 leading-relaxed">
-                            Coleção de exemplos práticos, códigos comentados e casos de uso reais relacionados ao conteúdo da aula.
-                          </p>
-                          <p className="text-[11px] font-mono text-emerald-800 pt-1">
-                            {materialBase}/material-complementar-{padded}.pdf
-                          </p>
+                          <h4 className="font-bold text-sm text-gray-900">Material Complementar</h4>
+                          <p className="text-[11px] font-mono text-emerald-800">{materialBase}/material-complementar-{padded}.pdf</p>
                         </div>
                       </div>
-
-                      <div className="pt-1">
-                        <a
-                          href={`${materialBase}/material-complementar-${padded}.pdf`}
-                          target="_blank"
-                          rel="noreferrer"
-                          download
-                          className="inline-flex items-center space-x-2 text-xs bg-[#006633] hover:bg-[#004d25] text-white px-3.5 py-2 rounded-lg font-bold transition-colors shadow-xs cursor-pointer"
-                        >
-                          <Download className="w-3.5 h-3.5 text-white" />
-                          <span>Baixar Material Complementar (material-complementar-{padded}.pdf)</span>
-                        </a>
-                      </div>
-
-                      <div className="bg-white p-4 rounded-lg border border-gray-200 text-xs text-gray-700 space-y-2">
-                        <p className="font-bold text-gray-900">Conteúdo do Material:</p>
-                        <ul className="list-disc list-inside space-y-1 text-gray-600 pl-1">
-                          <li>Exemplos de código comentados</li>
-                          <li>Casos de uso práticos da disciplina</li>
-                        </ul>
-                      </div>
+                      <a href={`${materialBase}/material-complementar-${padded}.pdf`} target="_blank" rel="noreferrer" download
+                        className="inline-flex items-center space-x-2 text-xs bg-[#006633] text-white px-3.5 py-2 rounded-lg font-bold">
+                        <Download className="w-3.5 h-3.5" /><span>Baixar Complementar (PDF)</span>
+                      </a>
                     </div>
 
                     {/* PDF 3 - Referências e Exercícios */}
@@ -767,145 +725,34 @@ export const Classroom: React.FC<ClassroomProps> = ({
                       <div className="flex items-start space-x-3">
                         <FileText className="w-6 h-6 text-[#006633] mt-1 shrink-0" />
                         <div className="space-y-1">
-                          <h4 className="font-bold text-sm text-gray-900">Referências Bibliográficas e Exercícios</h4>
-                          <p className="text-xs text-gray-600 leading-relaxed">
-                            Lista de referências recomendadas, artigos e exercícios adicionais para aprofundamento.
-                          </p>
-                          <p className="text-[11px] font-mono text-emerald-800 pt-1">
-                            {materialBase}/referencias-exercicios-{padded}.pdf
-                          </p>
+                          <h4 className="font-bold text-sm text-gray-900">Referências e Exercícios</h4>
+                          <p className="text-[11px] font-mono text-emerald-800">{materialBase}/referencias-exercicios-{padded}.pdf</p>
                         </div>
                       </div>
-
-                      <div className="pt-1">
-                        <a
-                          href={`${materialBase}/referencias-exercicios-${padded}.pdf`}
-                          target="_blank"
-                          rel="noreferrer"
-                          download
-                          className="inline-flex items-center space-x-2 text-xs bg-[#006633] hover:bg-[#004d25] text-white px-3.5 py-2 rounded-lg font-bold transition-colors shadow-xs cursor-pointer"
-                        >
-                          <Download className="w-3.5 h-3.5 text-white" />
-                          <span>Baixar Referências e Exercícios (referencias-exercicios-{padded}.pdf)</span>
-                        </a>
-                      </div>
-
-                      <div className="bg-white p-4 rounded-lg border border-gray-200 text-xs text-gray-700 space-y-2">
-                        <p className="font-bold text-gray-900">Conteúdo do Material:</p>
-                        <ul className="list-disc list-inside space-y-1 text-gray-600 pl-1">
-                          <li>Referências bibliográficas oficiais</li>
-                          <li>Exercícios extras de fixação</li>
-                        </ul>
-                      </div>
+                      <a href={`${materialBase}/referencias-exercicios-${padded}.pdf`} target="_blank" rel="noreferrer" download
+                        className="inline-flex items-center space-x-2 text-xs bg-[#006633] text-white px-3.5 py-2 rounded-lg font-bold">
+                        <Download className="w-3.5 h-3.5" /><span>Baixar Referências (PDF)</span>
+                      </a>
                     </div>
 
-                    {/* ===== ARQUIVOS DE TEXTO E README ===== */}
-
-                    {/* TXT 1 - Apostila em texto */}
+                    {/* README.md - MANTIDO */}
                     <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 space-y-4">
                       <div className="flex items-start space-x-3">
                         <FileText className="w-6 h-6 text-[#006633] mt-1 shrink-0" />
                         <div className="space-y-1">
-                          <h4 className="font-bold text-sm text-gray-900">
-                            Apostila em Formato Texto (Editável)
-                          </h4>
-                          <p className="text-xs text-gray-600 leading-relaxed">
-                            Versão em texto puro da apostila, útil para cópia, busca rápida e edição.
-                          </p>
-                          <p className="text-[11px] font-mono text-emerald-800 pt-1">
-                            {materialBase}/apostila-aula-{padded}.txt
-                          </p>
+                          <h4 className="font-bold text-sm text-gray-900">README da Aula</h4>
+                          <p className="text-[11px] font-mono text-emerald-800">{materialBase}/README.md</p>
                         </div>
                       </div>
-
-                      <div className="pt-1">
-                        <a
-                          href={`${materialBase}/apostila-aula-${padded}.txt`}
-                          target="_blank"
-                          rel="noreferrer"
-                          download
-                          className="inline-flex items-center space-x-2 text-xs bg-white border border-emerald-300 hover:border-[#006633] px-3.5 py-2 rounded-lg text-emerald-800 font-bold transition-all shadow-xs cursor-pointer"
-                        >
-                          <Download className="w-3.5 h-3.5 text-emerald-700" />
-                          <span>Baixar Apostila (.txt)</span>
-                        </a>
-                      </div>
+                      <a href={`${materialBase}/README.md`} target="_blank" rel="noreferrer" download
+                        className="inline-flex items-center space-x-2 text-xs bg-white border border-emerald-300 px-3.5 py-2 rounded-lg text-emerald-800 font-bold">
+                        <Download className="w-3.5 h-3.5" /><span>Baixar README.md</span>
+                      </a>
                     </div>
 
-                    {/* TXT 2 - Material de Estudo Experimental */}
-                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 space-y-4">
-                      <div className="flex items-start space-x-3">
-                        <FileText className="w-6 h-6 text-[#006633] mt-1 shrink-0" />
-                        <div className="space-y-1">
-                          <h4 className="font-bold text-sm text-gray-900">
-                            Material de Estudo Experimental
-                          </h4>
-                          <p className="text-xs text-gray-600 leading-relaxed">
-                            Roteiro prático, exercícios hands-on e orientações experimentais da aula.
-                          </p>
-                          <p className="text-[11px] font-mono text-emerald-800 pt-1">
-                            {materialBase}/material-estudo-experimental{padded === '01' ? '' : padded}.txt
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="pt-1">
-                        <a
-                          href={`${materialBase}/material-estudo-experimental${padded === '01' ? '' : padded}.txt`}
-                          target="_blank"
-                          rel="noreferrer"
-                          download
-                          className="inline-flex items-center space-x-2 text-xs bg-white border border-emerald-300 hover:border-[#006633] px-3.5 py-2 rounded-lg text-emerald-800 font-bold transition-all shadow-xs cursor-pointer"
-                        >
-                          <Download className="w-3.5 h-3.5 text-emerald-700" />
-                          <span>Baixar Material Experimental (.txt)</span>
-                        </a>
-                      </div>
-                    </div>
-
-                    {/* README.md */}
-                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 space-y-4">
-                      <div className="flex items-start space-x-3">
-                        <FileText className="w-6 h-6 text-[#006633] mt-1 shrink-0" />
-                        <div className="space-y-1">
-                          <h4 className="font-bold text-sm text-gray-900">
-                            README da Aula
-                          </h4>
-                          <p className="text-xs text-gray-600 leading-relaxed">
-                            Instruções gerais, pré-requisitos e observações da pasta da aula.
-                          </p>
-                          <p className="text-[11px] font-mono text-emerald-800 pt-1">
-                            {materialBase}/README.md
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="pt-1">
-                        <a
-                          href={`${materialBase}/README.md`}
-                          target="_blank"
-                          rel="noreferrer"
-                          download
-                          className="inline-flex items-center space-x-2 text-xs bg-white border border-emerald-300 hover:border-[#006633] px-3.5 py-2 rounded-lg text-emerald-800 font-bold transition-all shadow-xs cursor-pointer"
-                        >
-                          <Download className="w-3.5 h-3.5 text-emerald-700" />
-                          <span>Baixar README.md</span>
-                        </a>
-                      </div>
-                    </div>
-
-                    <div className="text-xs text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-200">
-                      <p className="font-bold text-gray-800">Critério de Conclusão da Etapa 3:</p>
-                      <p>Leitura técnica do texto da apostila para habilitação do Teste de Fixação (Passo 4).</p>
-                    </div>
-
-                    <button
-                      disabled={actionLoading}
-                      onClick={() => handleCompleteStep(3)}
-                      className="w-full bg-[#006633] hover:bg-[#004d25] text-white font-bold py-3 rounded-xl text-xs transition-colors flex items-center justify-center space-x-2 shadow-xs cursor-pointer"
-                    >
-                      <CheckCircle2 className="w-4 h-4" />
-                      <span>{isStepCompleted(3) ? 'Etapa 3 Concluída (Revalidar)' : 'Confirmar Leitura e Liberar Teste de Fixação'}</span>
+                    <button disabled={actionLoading} onClick={() => handleCompleteStep(3)}
+                      className="w-full bg-[#006633] hover:bg-[#004d25] text-white font-bold py-3 rounded-xl text-xs flex items-center justify-center space-x-2">
+                      <CheckCircle2 className="w-4 h-4" /><span>Confirmar Leitura e Liberar Teste</span>
                     </button>
                   </div>
                 )}

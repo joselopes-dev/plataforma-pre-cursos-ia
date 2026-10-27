@@ -1,8 +1,0 @@
-BD-104: Bancos de Dados
-=======================
-
---- Página 1 ---
-Relacional e Vetorial
-
-PostgreSQL ACID, MongoDB Redis pgvector RAG.
-

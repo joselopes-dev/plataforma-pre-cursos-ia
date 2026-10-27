@@ -7,10 +7,8 @@ Pasta: `modulo-2/12-pratica-supervisionada-1`
 - `video-aula-12.mp4` — Vídeo-aula expositiva
 - `slides-aula-12.pdf` — Lâminas de apresentação
 - `apostila-aula-12.pdf` — Apostila técnica completa
-- `apostila-aula-12.txt` — Versão texto da apostila
 - `material-complementar-12.pdf` — Exemplos práticos
 - `referencias-exercicios-12.pdf` — Referências e exercícios
-- `material-estudo-experimental12.txt` — Roteiro experimental
 
 ## Pré-requisitos
 

@@ -7,10 +7,8 @@ Pasta: `modulo-2/10-pln-chatbots`
 - `video-aula-10.mp4` — Vídeo-aula expositiva
 - `slides-aula-10.pdf` — Lâminas de apresentação
 - `apostila-aula-10.pdf` — Apostila técnica completa
-- `apostila-aula-10.txt` — Versão texto da apostila
 - `material-complementar-10.pdf` — Exemplos práticos
 - `referencias-exercicios-10.pdf` — Referências e exercícios
-- `material-estudo-experimental10.txt` — Roteiro experimental
 
 ## Pré-requisitos
 

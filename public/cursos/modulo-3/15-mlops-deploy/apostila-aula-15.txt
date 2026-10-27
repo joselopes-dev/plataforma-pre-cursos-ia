@@ -1,8 +1,0 @@
-MLO-303: MLOps e Deploy
-=======================
-
---- Página 1 ---
-MLOps
-
-MLflow Canary Blue Green Drift KS.
-

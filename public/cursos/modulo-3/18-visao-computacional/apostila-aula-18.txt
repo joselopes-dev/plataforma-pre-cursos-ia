@@ -1,8 +1,0 @@
-VIS-306: Visao Computacional
-============================
-
---- Página 1 ---
-Visao
-
-OpenCV YOLO U-Net Data Augmentation.
-

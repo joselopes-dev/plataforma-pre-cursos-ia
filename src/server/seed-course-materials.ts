@@ -69,7 +69,7 @@ function generateTextContent(title: string, pages: Array<{ header: string; text:
 }
 
 export const ALL_DISCIPLINES_MATERIALS = [
-  { dir: 'modulo-1/01-fundamentos/aula-01.pdf', number: '01', title: 'INF-101: Fundamentos de Informatica e Linux CLI', pages: [{ header: 'Arquitetura e Linux', text: 'Hardware, GPU, Tensor Cores, Linux CLI ls cd mkdir ps nvidia-smi, Git e venv.' }] },
+  { dir: 'modulo-1/01-fundamentos', number: '01', title: 'INF-101: Fundamentos de Informatica e Linux CLI', pages: [{ header: 'Arquitetura e Linux', text: 'Hardware, GPU, Tensor Cores, Linux CLI ls cd mkdir ps nvidia-smi, Git e venv.' }] },
   { dir: 'modulo-1/02-logica', number: '02', title: 'LOG-102: Logica de Programacao', pages: [{ header: 'Big-O e Estruturas', text: 'O1 OlogN NlogN, vetores, matrizes, funcoes puras.' }] },
   { dir: 'modulo-1/03-python', number: '03', title: 'PYTHON-103: Python Aplicado a IA', pages: [{ header: 'Python Cientifico', text: 'Listas, dicts, NumPy ndarray vetorizado, Pandas DataFrame, OOP fit predict.' }] },
   { dir: 'modulo-1/04-banco-dados', number: '04', title: 'BD-104: Bancos de Dados', pages: [{ header: 'Relacional e Vetorial', text: 'PostgreSQL ACID, MongoDB Redis pgvector RAG.' }] },
@@ -126,32 +126,32 @@ export function seedAllCourseMaterials() {
     // ===== NOVOS ARQUIVOS DE TEXTO =====
 
     // 1. Apostila em texto (.txt)
-    const apostilaTxt = generateTextContent(item.title, item.pages);
-    fs.writeFileSync(path.join(dirPath, `apostila-aula-${num}.txt`), apostilaTxt, 'utf8');
+    //const apostilaTxt = generateTextContent(item.title, item.pages);
+    //fs.writeFileSync(path.join(dirPath, `apostila-aula-${num}.txt`), apostilaTxt, 'utf8');
 
     // 2. Material de Estudo Experimental
     //    Mantém a mesma regra do frontend:
     //    - pasta 01 → material-estudo-experimental.txt
     //    - demais   → material-estudo-experimentalXX.txt
-    const experimentalFileName =
-      num === '01'
-        ? 'material-estudo-experimental.txt'
-        : `material-estudo-experimental${num}.txt`;
+    //const experimentalFileName =
+      //num === '01'
+        //? 'material-estudo-experimental.txt'
+        //: `material-estudo-experimental${num}.txt`;
 
-    const experimentalContent = [
-      `Material de Estudo Experimental - ${item.title}`,
-      '='.repeat(50),
-      '',
-      'Roteiro prático e exercícios hands-on da aula.',
-      '',
-      item.pages.map(p => `${p.header}\n${p.text}`).join('\n\n'),
-      '',
-      'Instruções:',
-      '- Execute os exemplos no ambiente indicado.',
-      '- Anote resultados e dúvidas para o tutor.',
-    ].join('\n');
+    //const experimentalContent = [
+      //`Material de Estudo Experimental - ${item.title}`,
+      //'='.repeat(50),
+      //'',
+      //'Roteiro prático e exercícios hands-on da aula.',
+      //'',
+      //item.pages.map(p => `${p.header}\n${p.text}`).join('\n\n'),
+      //'',
+      //'Instruções:',
+      //'- Execute os exemplos no ambiente indicado.',
+      //'- Anote resultados e dúvidas para o tutor.',
+    //].join('\n');
 
-    fs.writeFileSync(path.join(dirPath, experimentalFileName), experimentalContent, 'utf8');
+    //fs.writeFileSync(path.join(dirPath, experimentalFileName), experimentalContent, 'utf8');
 
     // 3. README.md
     const readmeContent = [
@@ -164,10 +164,10 @@ export function seedAllCourseMaterials() {
       `- \`video-aula-${num}.mp4\` — Vídeo-aula expositiva`,
       `- \`slides-aula-${num}.pdf\` — Lâminas de apresentação`,
       `- \`apostila-aula-${num}.pdf\` — Apostila técnica completa`,
-      `- \`apostila-aula-${num}.txt\` — Versão texto da apostila`,
+      
       `- \`material-complementar-${num}.pdf\` — Exemplos práticos`,
       `- \`referencias-exercicios-${num}.pdf\` — Referências e exercícios`,
-      `- \`${experimentalFileName}\` — Roteiro experimental`,
+      
       '',
       '## Pré-requisitos',
       '',
