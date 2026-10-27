@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Discipline, Lesson, User, FinalExamQuestion } from '../types/index.ts';
 import { 
-  ArrowLeft, Video, SlidersHorizontal, FileText, CheckSquare, Unlock, Lock, CheckCircle2, AlertCircle, Bot, Download, FileCheck, Award
+  ArrowLeft, Video, SlidersHorizontal, FileText, CheckSquare, Unlock, Lock, CheckCircle2, AlertCircle, Bot, Download, Award, FileCheck
 } from 'lucide-react';
 
 interface ClassroomProps {
@@ -38,30 +38,19 @@ export const Classroom: React.FC<ClassroomProps> = ({
         const res = await fetch(`/api/v1/curriculum/disciplines/${disciplineId}`);
         const data = await res.json();
         setDisciplineData(data);
-        if (data.lessons && data.lessons.length > 0) {
-          setActiveLessonId(data.lessons[0].id);
-        }
+        if (data.lessons && data.lessons.length > 0) setActiveLessonId(data.lessons[0].id);
         const progRes = await fetch('/api/v1/progress');
         const progData = await progRes.json();
         const map: Record<string, boolean> = {};
         if (progData.rawProgress) {
           progData.rawProgress.forEach((p: any) => {
-            if (p.disciplineId === disciplineId && p.completed) {
-              map[`${p.lessonId}:${p.stepNumber}`] = true;
-            }
+            if (p.disciplineId === disciplineId && p.completed) map[`${p.lessonId}:${p.stepNumber}`] = true;
           });
         }
         setProgressMap(map);
         const approval = progData.approvals?.find((a: any) => a.disciplineId === disciplineId && a.approved);
-        if (approval) {
-          setIsDisciplineApproved(true);
-          setFinalGrade(approval.finalGrade);
-        }
-      } catch (err) {
-        console.error('Erro ao carregar dados da disciplina:', err);
-      } finally {
-        setLoading(false);
-      }
+        if (approval) { setIsDisciplineApproved(true); setFinalGrade(approval.finalGrade); }
+      } catch (err) { console.error('Erro ao carregar dados da disciplina:', err); } finally { setLoading(false); }
     }
     loadData();
   }, [disciplineId]);
@@ -80,46 +69,24 @@ export const Classroom: React.FC<ClassroomProps> = ({
   const { discipline, lessons } = disciplineData;
   const currentLesson = lessons.find((l) => l.id === activeLessonId) || lessons[0];
 
-  // ================== FIX AJUSTADO - ESSA É A PARTE QUE VOCÊ PEDIU ==================
-  const getLessonNumber = (lesson: Lesson): number => {
-    const anyLesson = lesson as any;
-    if (anyLesson.number) return anyLesson.number;
-    if (anyLesson.order) return anyLesson.order;
-    // disc-01-aula-1 -> 01 | 01-fundamentos -> 01
-    const m = lesson.id.match(/disc-0*(\d+)/i) || lesson.id.match(/^0*(\d+)/);
-    return m ? parseInt(m[1], 10) : 1;
-  };
-
-  const padded = String(getLessonNumber(currentLesson)).padStart(2, '0');
-
-  // Mapa das pastas REAIS que existem no seu public/cursos
-  // Se adicionar modulo-2 e modulo-3, adiciona aqui também
-  const realFolderMap: Record<number, Record<string, string>> = {
-    1: {
-      '01': '01-fundamentos',
-      '02': '02-logica',
-      '03': '03-python',
-      '04': '04-banco-dados',
-    },
-    2: {
-      '01': '01-introducao',
-      '02': '02-conceitos',
-      '03': '03-pratica',
-      '04': '04-projeto',
-    },
-    3: {
-      '01': '01-avancado',
-      '02': '02-avancado',
-      '03': '03-avancado',
-      '04': '04-avancado',
-    },
-  };
-
-  const moduleIdNum = Number(discipline.moduleId) || 1;
-  const lessonFolder = realFolderMap[moduleIdNum]?.[padded] || `${padded}-fundamentos`;
+  // ================== FIX DEFINITIVO - 3 APOSTILAS + SEM REPLICAÇÃO ==================
+  const lessonIndex = (lessons.findIndex((l) => l.id === currentLesson.id) + 1) || 1;
+  const moduleNum = Number(discipline.moduleId) || 1;
   
-  // CAMINHO FINAL QUE REALMENTE EXISTE NO DISCO
-  const basePath = `/cursos/modulo-${moduleIdNum}/${lessonFolder}`;
+  // Offset para manter numeração global: modulo-1 = 01-06, modulo-2 = 07-12, modulo-3 = 13-20
+  const moduleOffsets: Record<number, number> = { 1: 0, 2: 6, 3: 12 };
+  const offset = moduleOffsets[moduleNum] || 0;
+  const globalNum = offset + lessonIndex;
+  const padded = String(globalNum).padStart(2, '0');
+
+  const realFolderMap: Record<number, Record<string, string>> = {
+    1: { '01': '01-fundamentos', '02': '02-logica', '03': '03-python', '04': '04-banco-dados', '05': '05-matematica-estatistica', '06': '06-fundamentos-ia' },
+    2: { '07': '07-python-ciencia-dados', '08': '08-ml-aplicado', '09': '09-deep-learning', '10': '10-pln-chatbots', '11': '11-metodologia', '12': '12-pratica-supervisionada-1' },
+    3: { '13': '13-seguranca-lgpd', '14': '14-engenharia-software-ia', '15': '15-mlops-deploy', '16': '16-assistentes-ia', '17': '17-llms-ia', '18': '18-visao-computacional', '19': '19-gestao-projetos-ia', '20': '20-pratica-supervisionada-2' },
+  };
+
+  const lessonFolder = realFolderMap[moduleNum]?.[padded] || `${padded}-aula`;
+  const basePath = `/cursos/modulo-${moduleNum}/${lessonFolder}`;
   // ===================================================================================
 
   const areAllLessonsCompleted = lessons.every((l) => Boolean(progressMap[`${l.id}:5`]));
@@ -128,22 +95,14 @@ export const Classroom: React.FC<ClassroomProps> = ({
 
   const handleCompleteStep = async (stepNum: number) => {
     try {
-      setActionLoading(true);
-      setFeedbackMessage(null);
-      const res = await fetch('/api/v1/progress/step', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ disciplineId: discipline.id, lessonId: currentLesson.id, stepNumber: stepNum }),
-      });
+      setActionLoading(true); setFeedbackMessage(null);
+      const res = await fetch('/api/v1/progress/step', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ disciplineId: discipline.id, lessonId: currentLesson.id, stepNumber: stepNum }) });
       const result = await res.json();
       if (!res.ok) { setFeedbackMessage({ type: 'error', text: result.message || result.error }); return; }
       setProgressMap((prev) => ({ ...prev, [`${currentLesson.id}:${stepNum}`]: true }));
-      setFeedbackMessage({ type: 'success', text: result.message });
-      onProgressUpdated();
+      setFeedbackMessage({ type: 'success', text: result.message }); onProgressUpdated();
       if (stepNum < 5) setActiveStepNumber(stepNum + 1);
-    } catch (err: any) {
-      setFeedbackMessage({ type: 'error', text: 'Falha: ' + err.message });
-    } finally { setActionLoading(false); }
+    } catch (err: any) { setFeedbackMessage({ type: 'error', text: 'Falha: ' + err.message }); } finally { setActionLoading(false); }
   };
 
   const handleSubmitQuiz = async () => {
@@ -151,48 +110,29 @@ export const Classroom: React.FC<ClassroomProps> = ({
       setActionLoading(true);
       const answersArray = [quizAnswers[0], quizAnswers[1], quizAnswers[2]];
       if (answersArray.some((a) => a === -1)) { setFeedbackMessage({ type: 'error', text: 'Responda as 3 questões.' }); setActionLoading(false); return; }
-      const res = await fetch('/api/v1/progress/quiz', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ disciplineId: discipline.id, lessonId: currentLesson.id, answers: answersArray }),
-      });
-      const result = await res.json();
-      setQuizResult(result);
-      if (result.passed) {
-        setProgressMap((prev) => ({ ...prev, [`${currentLesson.id}:4`]: true }));
-        setFeedbackMessage({ type: 'success', text: result.feedback });
-        onProgressUpdated();
-        setActiveStepNumber(5);
-      } else setFeedbackMessage({ type: 'error', text: result.feedback });
+      const res = await fetch('/api/v1/progress/quiz', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ disciplineId: discipline.id, lessonId: currentLesson.id, answers: answersArray }) });
+      const result = await res.json(); setQuizResult(result);
+      if (result.passed) { setProgressMap((prev) => ({ ...prev, [`${currentLesson.id}:4`]: true })); setFeedbackMessage({ type: 'success', text: result.feedback }); onProgressUpdated(); setActiveStepNumber(5); }
+      else setFeedbackMessage({ type: 'error', text: result.feedback });
     } catch (err: any) { setFeedbackMessage({ type: 'error', text: 'Erro: ' + err.message }); } finally { setActionLoading(false); }
   };
 
   const handleOpenFinalExam = async () => {
     try {
       setActionLoading(true); setIsFinalExamActive(true);
-      const res = await fetch(`/api/v1/progress/final-exam/${discipline.id}`);
-      const data = await res.json();
+      const res = await fetch(`/api/v1/progress/final-exam/${discipline.id}`); const data = await res.json();
       if (!res.ok) { setFeedbackMessage({ type: 'error', text: data.error }); setIsFinalExamActive(false); return; }
       setFinalExamQuestions(data.questions || []);
-      const initialAnswers: Record<number, number> = {};
-      for (let i = 0; i < 10; i++) initialAnswers[i] = -1;
-      setFinalExamAnswers(initialAnswers);
+      const initialAnswers: Record<number, number> = {}; for (let i = 0; i < 10; i++) initialAnswers[i] = -1; setFinalExamAnswers(initialAnswers);
     } catch (err: any) { setFeedbackMessage({ type: 'error', text: 'Falha: ' + err.message }); setIsFinalExamActive(false); } finally { setActionLoading(false); }
   };
 
   const handleSubmitFinalExam = async () => {
     try {
-      setActionLoading(true);
-      const answersArray: number[] = [];
-      for (let i = 0; i < 10; i++) answersArray.push(finalExamAnswers[i] ?? -1);
+      setActionLoading(true); const answersArray: number[] = []; for (let i = 0; i < 10; i++) answersArray.push(finalExamAnswers[i] ?? -1);
       if (answersArray.some((a) => a === -1)) { setFeedbackMessage({ type: 'error', text: 'Responda as 10 questões.' }); setActionLoading(false); return; }
-      const res = await fetch(`/api/v1/progress/final-exam/${discipline.id}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ answers: answersArray }),
-      });
-      const result = await res.json();
-      setFinalExamResult(result);
+      const res = await fetch(`/api/v1/progress/final-exam/${discipline.id}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ answers: answersArray }) });
+      const result = await res.json(); setFinalExamResult(result);
       if (result.passed) { setIsDisciplineApproved(true); setFinalGrade(result.score); setFeedbackMessage({ type: 'success', text: result.feedback }); onProgressUpdated(); }
       else setFeedbackMessage({ type: 'error', text: result.feedback });
     } catch (err: any) { setFeedbackMessage({ type: 'error', text: 'Erro: ' + err.message }); } finally { setActionLoading(false); }
@@ -226,14 +166,14 @@ export const Classroom: React.FC<ClassroomProps> = ({
               return (
                 <button key={lesson.id} disabled={!isPrevDone} onClick={() => { setIsFinalExamActive(false); setActiveLessonId(lesson.id); setActiveStepNumber(1); setFeedbackMessage(null); }} className={`w-full text-left p-3.5 rounded-xl border text-xs flex justify-between gap-2 cursor-pointer ${isSelected ? 'border-[#006633] bg-emerald-50 ring-1 ring-[#006633]' : isPrevDone ? 'border-gray-200 bg-white' : 'border-gray-100 bg-gray-50 opacity-60'}`}>
                   <div><span className="font-bold">{lesson.title}</span><p className="text-[11px] text-gray-500">{lesson.summary}</p></div>
-                  {isDone ? <CheckCircle2 className="w-4 h-4 text-emerald-600" /> : isPrevDone ? <span className="w-2 h-2 rounded-full bg-blue-500 inline-block"></span> : <Lock className="w-3.5 h-3.5 text-gray-400" />}
+                  {isDone ? <CheckCircle2 className="w-4 h-4 text-emerald-600" /> : <span className="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>}
                 </button>
               );
             })}
           </div>
           <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 text-[11px]">
-            <span className="font-bold text-gray-800">Caminho real:</span>
-            <p className="font-mono text-[10px] text-emerald-800 break-all">{basePath}</p>
+            <span className="font-bold">Caminho real:</span>
+            <p className="font-mono text-[10px] text-emerald-800 break-all">{basePath}/video-aula-{padded}.mp4</p>
           </div>
         </div>
 
@@ -252,7 +192,7 @@ export const Classroom: React.FC<ClassroomProps> = ({
                 <div className="grid grid-cols-5 gap-2 text-center text-xs">
                   {[{ num: 1, label: '1. Vídeo', icon: Video }, { num: 2, label: '2. Slides', icon: SlidersHorizontal }, { num: 3, label: '3. PDF', icon: FileText }, { num: 4, label: '4. Teste', icon: CheckSquare }, { num: 5, label: '5. Liberação', icon: Unlock }].map(({ num, label, icon: Icon }) => {
                     const done = isStepCompleted(num); const unlocked = isStepUnlocked(num); const cur = activeStepNumber === num;
-                    return <button key={num} disabled={!unlocked} onClick={() => setActiveStepNumber(num)} className={`p-2.5 rounded-lg border font-semibold flex flex-col items-center space-y-1 cursor-pointer ${done ? 'border-emerald-300 bg-emerald-50' : cur ? 'border-[#006633] bg-[#006633] text-white' : unlocked ? 'border-gray-200 bg-white' : 'bg-gray-50 text-gray-400'}`}><Icon className="w-4 h-4" /><span className="text-[11px]">{label}</span><span className="text-[10px]">{done ? '✓ Feito' : !unlocked ? '🔒' : ''}</span></button>;
+                    return <button key={num} disabled={!unlocked} onClick={() => setActiveStepNumber(num)} className={`p-2.5 rounded-lg border font-semibold flex flex-col items-center space-y-1 cursor-pointer ${done ? 'border-emerald-300 bg-emerald-50' : cur ? 'border-[#006633] bg-[#006633] text-white' : unlocked ? 'border-gray-200 bg-white' : 'bg-gray-50 text-gray-400'}`}><Icon className="w-4 h-4" /><span className="text-[11px]">{label}</span></button>;
                   })}
                 </div>
               </div>
@@ -260,25 +200,25 @@ export const Classroom: React.FC<ClassroomProps> = ({
               <div className="bg-white p-6 rounded-2xl border min-h-[420px] flex flex-col justify-between">
                 {activeStepNumber === 1 && (
                   <div className="space-y-4">
-                    <h3 className="text-lg font-bold">Vídeo-Aula - {basePath}</h3>
+                    <h3 className="text-lg font-bold">Vídeo-Aula {padded}</h3>
                     <div className="aspect-video bg-gray-900 rounded-xl overflow-hidden"><video controls className="w-full h-full object-contain" src={`${basePath}/video-aula-${padded}.mp4`} /></div>
                     <button disabled={actionLoading} onClick={() => handleCompleteStep(1)} className="w-full bg-[#006633] text-white font-bold py-3 rounded-xl text-xs cursor-pointer">Concluir Vídeo</button>
                   </div>
                 )}
                 {activeStepNumber === 2 && (
                   <div className="space-y-4">
-                    <h3 className="text-lg font-bold">Slides</h3>
+                    <h3 className="text-lg font-bold">Slides {padded}</h3>
                     <div className="border-2 border-dashed rounded-xl p-8 text-center bg-gray-50/50"><SlidersHorizontal className="w-12 h-12 text-emerald-700 mx-auto" /><p className="text-[11px] font-mono text-emerald-800 mt-2">{basePath}/slides-aula-{padded}.pdf</p><a href={`${basePath}/slides-aula-${padded}.pdf`} target="_blank" rel="noreferrer" className="inline-flex mt-3 items-center space-x-2 bg-white border border-emerald-300 px-3.5 py-2 rounded-lg text-xs font-bold cursor-pointer"><Download className="w-3.5 h-3.5" /><span>Baixar Slides</span></a></div>
                     <button disabled={actionLoading} onClick={() => handleCompleteStep(2)} className="w-full bg-[#006633] text-white font-bold py-3 rounded-xl text-xs cursor-pointer">Concluir Slides</button>
                   </div>
                 )}
                 {activeStepNumber === 3 && (
                   <div className="space-y-4">
-                    <h3 className="text-lg font-bold">Material Didático</h3>
-                    <div className="bg-gray-50 border rounded-xl p-6 space-y-2"><p className="text-xs font-bold">Apostila {padded}</p><p className="text-[11px] font-mono">{basePath}/apostila-aula-{padded}.pdf</p><a href={`${basePath}/apostila-aula-${padded}.pdf`} target="_blank" rel="noreferrer" className="inline-flex bg-[#006633] text-white px-3.5 py-2 rounded-lg text-xs font-bold cursor-pointer"><Download className="w-3.5 h-3.5 mr-2" />Baixar Apostila</a></div>
-                    <div className="bg-gray-50 border rounded-xl p-6 space-y-2"><p className="text-xs font-bold">Complementar</p><a href={`${basePath}/material-complementar-${padded}.pdf`} target="_blank" rel="noreferrer" className="inline-flex bg-[#006633] text-white px-3.5 py-2 rounded-lg text-xs font-bold cursor-pointer"><Download className="w-3.5 h-3.5 mr-2" />Baixar Complementar</a></div>
-                    <div className="bg-gray-50 border rounded-xl p-6 space-y-2"><p className="text-xs font-bold">Referências</p><a href={`${basePath}/referencias-exercicios-${padded}.pdf`} target="_blank" rel="noreferrer" className="inline-flex bg-[#006633] text-white px-3.5 py-2 rounded-lg text-xs font-bold cursor-pointer"><Download className="w-3.5 h-3.5 mr-2" />Baixar Referências</a></div>
-                    <button disabled={actionLoading} onClick={() => handleCompleteStep(3)} className="w-full bg-[#006633] text-white font-bold py-3 rounded-xl text-xs cursor-pointer">Confirmar Leitura</button>
+                    <h3 className="text-lg font-bold">Material Didático - 3 Apostilas</h3>
+                    <div className="bg-gray-50 border rounded-xl p-6 space-y-2"><p className="text-xs font-bold">Apostila Principal {padded}</p><p className="text-[11px] font-mono">{basePath}/apostila-aula-{padded}.pdf</p><a href={`${basePath}/apostila-aula-${padded}.pdf`} target="_blank" rel="noreferrer" className="inline-flex bg-[#006633] text-white px-3.5 py-2 rounded-lg text-xs font-bold cursor-pointer"><Download className="w-3.5 h-3.5 mr-2" />Baixar Apostila 1</a></div>
+                    <div className="bg-gray-50 border rounded-xl p-6 space-y-2"><p className="text-xs font-bold">Apostila 2 - Complementar</p><p className="text-[11px] font-mono">{basePath}/material-complementar-${padded}.pdf</p><a href={`${basePath}/material-complementar-${padded}.pdf`} target="_blank" rel="noreferrer" className="inline-flex bg-[#006633] text-white px-3.5 py-2 rounded-lg text-xs font-bold cursor-pointer"><Download className="w-3.5 h-3.5 mr-2" />Baixar Apostila 2</a></div>
+                    <div className="bg-gray-50 border rounded-xl p-6 space-y-2"><p className="text-xs font-bold">Apostila 3 - Referências</p><p className="text-[11px] font-mono">{basePath}/referencias-exercicios-${padded}.pdf</p><a href={`${basePath}/referencias-exercicios-${padded}.pdf`} target="_blank" rel="noreferrer" className="inline-flex bg-[#006633] text-white px-3.5 py-2 rounded-lg text-xs font-bold cursor-pointer"><Download className="w-3.5 h-3.5 mr-2" />Baixar Apostila 3</a></div>
+                    <button disabled={actionLoading} onClick={() => handleCompleteStep(3)} className="w-full bg-[#006633] text-white font-bold py-3 rounded-xl text-xs cursor-pointer">Confirmar Leitura das 3 Apostilas</button>
                   </div>
                 )}
                 {activeStepNumber === 4 && (
@@ -289,7 +229,7 @@ export const Classroom: React.FC<ClassroomProps> = ({
                 )}
                 {activeStepNumber === 5 && (
                   <div className="space-y-4">
-                    <div className="border border-emerald-200 bg-emerald-50 rounded-xl p-8 text-center"><Award className="w-8 h-8 text-[#006633] mx-auto" /><h4 className="font-extrabold mt-2">Aula Concluída!</h4></div>
+                    <div className="border border-emerald-200 bg-emerald-50 rounded-xl p-8 text-center"><Award className="w-8 h-8 text-[#006633] mx-auto" /><h4 className="font-extrabold mt-2">Aula {padded} Concluída!</h4></div>
                     <button disabled={actionLoading} onClick={() => handleCompleteStep(5)} className="w-full bg-[#006633] text-white font-bold py-3 rounded-xl text-xs cursor-pointer">Confirmar e Prosseguir</button>
                   </div>
                 )}
