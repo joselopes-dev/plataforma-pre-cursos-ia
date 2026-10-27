@@ -1,22 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Discipline, Lesson, LessonStep, User, FinalExamQuestion } from '../types/index.ts';
+import { Discipline, Lesson, User, FinalExamQuestion } from '../types/index.ts';
 import { 
-  ArrowLeft, 
-  Video, 
-  SlidersHorizontal, 
-  FileText, 
-  CheckSquare, 
-  Unlock, 
-  Lock, 
-  CheckCircle2, 
-  AlertCircle, 
-  Play, 
-  Bot, 
-  Download, 
-  ChevronRight, 
-  HelpCircle,
-  Award,
-  FileCheck
+  ArrowLeft, Video, SlidersHorizontal, FileText, CheckSquare, Unlock, Lock, CheckCircle2, AlertCircle, Bot, Download, FileCheck, Award
 } from 'lucide-react';
 
 interface ClassroomProps {
@@ -28,11 +13,7 @@ interface ClassroomProps {
 }
 
 export const Classroom: React.FC<ClassroomProps> = ({
-  disciplineId,
-  user,
-  onBack,
-  openTutorWithContext,
-  onProgressUpdated,
+  disciplineId, user, onBack, openTutorWithContext, onProgressUpdated,
 }) => {
   const [disciplineData, setDisciplineData] = useState<{ discipline: Discipline; lessons: Lesson[] } | null>(null);
   const [activeLessonId, setActiveLessonId] = useState<string>('');
@@ -41,12 +22,8 @@ export const Classroom: React.FC<ClassroomProps> = ({
   const [loading, setLoading] = useState<boolean>(true);
   const [actionLoading, setActionLoading] = useState<boolean>(false);
   const [feedbackMessage, setFeedbackMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
-
-  // Estado do Teste de Fixação (Aula - 3 questões)
   const [quizAnswers, setQuizAnswers] = useState<Record<number, number>>({ 0: -1, 1: -1, 2: -1 });
   const [quizResult, setQuizResult] = useState<{ score: number; passed: boolean; feedback: string; explanation: string } | null>(null);
-
-  // Estado da Avaliação Final da Disciplina (10 questões)
   const [isFinalExamActive, setIsFinalExamActive] = useState<boolean>(false);
   const [finalExamQuestions, setFinalExamQuestions] = useState<FinalExamQuestion[]>([]);
   const [finalExamAnswers, setFinalExamAnswers] = useState<Record<number, number>>({});
@@ -54,7 +31,6 @@ export const Classroom: React.FC<ClassroomProps> = ({
   const [isDisciplineApproved, setIsDisciplineApproved] = useState<boolean>(false);
   const [finalGrade, setFinalGrade] = useState<number | null>(null);
 
-  // Carrega dados da disciplina e lições
   useEffect(() => {
     async function loadData() {
       try {
@@ -62,15 +38,11 @@ export const Classroom: React.FC<ClassroomProps> = ({
         const res = await fetch(`/api/v1/curriculum/disciplines/${disciplineId}`);
         const data = await res.json();
         setDisciplineData(data);
-
         if (data.lessons && data.lessons.length > 0) {
           setActiveLessonId(data.lessons[0].id);
         }
-
-        // Carrega progresso do usuário
         const progRes = await fetch('/api/v1/progress');
         const progData = await progRes.json();
-
         const map: Record<string, boolean> = {};
         if (progData.rawProgress) {
           progData.rawProgress.forEach((p: any) => {
@@ -80,8 +52,6 @@ export const Classroom: React.FC<ClassroomProps> = ({
           });
         }
         setProgressMap(map);
-
-        // Verifica se a disciplina já possui aprovação na Avaliação Final
         const approval = progData.approvals?.find((a: any) => a.disciplineId === disciplineId && a.approved);
         if (approval) {
           setIsDisciplineApproved(true);
@@ -93,7 +63,6 @@ export const Classroom: React.FC<ClassroomProps> = ({
         setLoading(false);
       }
     }
-
     loadData();
   }, [disciplineId]);
 
@@ -111,857 +80,217 @@ export const Classroom: React.FC<ClassroomProps> = ({
   const { discipline, lessons } = disciplineData;
   const currentLesson = lessons.find((l) => l.id === activeLessonId) || lessons[0];
 
-  // Número da aula atual (01, 02, 03...) baseado na posição da lição
-  const lessonNumber = (lessons.findIndex((l) => l.id === currentLesson.id) + 1) || 1;
-  const padded = String(lessonNumber).padStart(2, '0');
+  // ================== FIX AJUSTADO - ESSA É A PARTE QUE VOCÊ PEDIU ==================
+  const getLessonNumber = (lesson: Lesson): number => {
+    const anyLesson = lesson as any;
+    if (anyLesson.number) return anyLesson.number;
+    if (anyLesson.order) return anyLesson.order;
+    // disc-01-aula-1 -> 01 | 01-fundamentos -> 01
+    const m = lesson.id.match(/disc-0*(\d+)/i) || lesson.id.match(/^0*(\d+)/);
+    return m ? parseInt(m[1], 10) : 1;
+  };
 
-  // Verifica se todas as aulas da disciplina foram concluídas para liberar a Avaliação Final de 10 Questões
+  const padded = String(getLessonNumber(currentLesson)).padStart(2, '0');
+
+  // Mapa das pastas REAIS que existem no seu public/cursos
+  // Se adicionar modulo-2 e modulo-3, adiciona aqui também
+  const realFolderMap: Record<number, Record<string, string>> = {
+    1: {
+      '01': '01-fundamentos',
+      '02': '02-logica',
+      '03': '03-python',
+      '04': '04-banco-dados',
+    },
+    2: {
+      '01': '01-introducao',
+      '02': '02-conceitos',
+      '03': '03-pratica',
+      '04': '04-projeto',
+    },
+    3: {
+      '01': '01-avancado',
+      '02': '02-avancado',
+      '03': '03-avancado',
+      '04': '04-avancado',
+    },
+  };
+
+  const moduleIdNum = Number(discipline.moduleId) || 1;
+  const lessonFolder = realFolderMap[moduleIdNum]?.[padded] || `${padded}-fundamentos`;
+  
+  // CAMINHO FINAL QUE REALMENTE EXISTE NO DISCO
+  const basePath = `/cursos/modulo-${moduleIdNum}/${lessonFolder}`;
+  // ===================================================================================
+
   const areAllLessonsCompleted = lessons.every((l) => Boolean(progressMap[`${l.id}:5`]));
+  const isStepUnlocked = (stepNum: number) => stepNum === 1 || Boolean(progressMap[`${currentLesson.id}:${stepNum - 1}`]);
+  const isStepCompleted = (stepNum: number) => Boolean(progressMap[`${currentLesson.id}:${stepNum}`]);
 
-  // Helper para verificar se um passo está liberado
-  const isStepUnlocked = (stepNum: number) => {
-    if (stepNum === 1) return true;
-    return Boolean(progressMap[`${currentLesson.id}:${stepNum - 1}`]);
-  };
-
-  const isStepCompleted = (stepNum: number) => {
-    return Boolean(progressMap[`${currentLesson.id}:${stepNum}`]);
-  };
-
-  // Concluir Etapas 1, 2, 3 ou 5 no backend
   const handleCompleteStep = async (stepNum: number) => {
     try {
       setActionLoading(true);
       setFeedbackMessage(null);
-
       const res = await fetch('/api/v1/progress/step', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          disciplineId: discipline.id,
-          lessonId: currentLesson.id,
-          stepNumber: stepNum,
-        }),
+        body: JSON.stringify({ disciplineId: discipline.id, lessonId: currentLesson.id, stepNumber: stepNum }),
       });
-
       const result = await res.json();
-
-      if (!res.ok) {
-        setFeedbackMessage({ type: 'error', text: result.message || result.error });
-        return;
-      }
-
-      setProgressMap((prev) => ({
-        ...prev,
-        [`${currentLesson.id}:${stepNum}`]: true,
-      }));
-
+      if (!res.ok) { setFeedbackMessage({ type: 'error', text: result.message || result.error }); return; }
+      setProgressMap((prev) => ({ ...prev, [`${currentLesson.id}:${stepNum}`]: true }));
       setFeedbackMessage({ type: 'success', text: result.message });
       onProgressUpdated();
-
-      if (stepNum < 5) {
-        setActiveStepNumber(stepNum + 1);
-      }
+      if (stepNum < 5) setActiveStepNumber(stepNum + 1);
     } catch (err: any) {
-      setFeedbackMessage({ type: 'error', text: 'Falha de comunicação com o servidor: ' + err.message });
-    } finally {
-      setActionLoading(false);
-    }
+      setFeedbackMessage({ type: 'error', text: 'Falha: ' + err.message });
+    } finally { setActionLoading(false); }
   };
 
-  // Submeter Teste de Fixação (Etapa 4 da Aula)
   const handleSubmitQuiz = async () => {
     try {
       setActionLoading(true);
-      setFeedbackMessage(null);
-
       const answersArray = [quizAnswers[0], quizAnswers[1], quizAnswers[2]];
-      if (answersArray.some((a) => a === -1)) {
-        setFeedbackMessage({ type: 'error', text: 'Por favor, responda a todas as 3 questões antes de enviar.' });
-        setActionLoading(false);
-        return;
-      }
-
+      if (answersArray.some((a) => a === -1)) { setFeedbackMessage({ type: 'error', text: 'Responda as 3 questões.' }); setActionLoading(false); return; }
       const res = await fetch('/api/v1/progress/quiz', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          disciplineId: discipline.id,
-          lessonId: currentLesson.id,
-          answers: answersArray,
-        }),
+        body: JSON.stringify({ disciplineId: discipline.id, lessonId: currentLesson.id, answers: answersArray }),
       });
-
       const result = await res.json();
       setQuizResult(result);
-
       if (result.passed) {
-        setProgressMap((prev) => ({
-          ...prev,
-          [`${currentLesson.id}:4`]: true,
-        }));
+        setProgressMap((prev) => ({ ...prev, [`${currentLesson.id}:4`]: true }));
         setFeedbackMessage({ type: 'success', text: result.feedback });
         onProgressUpdated();
         setActiveStepNumber(5);
-      } else {
-        setFeedbackMessage({ type: 'error', text: result.feedback });
-      }
-    } catch (err: any) {
-      setFeedbackMessage({ type: 'error', text: 'Erro ao avaliar teste: ' + err.message });
-    } finally {
-      setActionLoading(false);
-    }
+      } else setFeedbackMessage({ type: 'error', text: result.feedback });
+    } catch (err: any) { setFeedbackMessage({ type: 'error', text: 'Erro: ' + err.message }); } finally { setActionLoading(false); }
   };
 
-  // Abrir Avaliação Final de 10 Questões do Componente
   const handleOpenFinalExam = async () => {
     try {
-      setActionLoading(true);
-      setFeedbackMessage(null);
-      setIsFinalExamActive(true);
-
+      setActionLoading(true); setIsFinalExamActive(true);
       const res = await fetch(`/api/v1/progress/final-exam/${discipline.id}`);
       const data = await res.json();
-
-      if (!res.ok) {
-        setFeedbackMessage({ type: 'error', text: data.error || 'Não foi possível carregar a Avaliação Final.' });
-        setIsFinalExamActive(false);
-        return;
-      }
-
+      if (!res.ok) { setFeedbackMessage({ type: 'error', text: data.error }); setIsFinalExamActive(false); return; }
       setFinalExamQuestions(data.questions || []);
       const initialAnswers: Record<number, number> = {};
       for (let i = 0; i < 10; i++) initialAnswers[i] = -1;
       setFinalExamAnswers(initialAnswers);
-    } catch (err: any) {
-      setFeedbackMessage({ type: 'error', text: 'Falha ao acessar Avaliação Final: ' + err.message });
-      setIsFinalExamActive(false);
-    } finally {
-      setActionLoading(false);
-    }
+    } catch (err: any) { setFeedbackMessage({ type: 'error', text: 'Falha: ' + err.message }); setIsFinalExamActive(false); } finally { setActionLoading(false); }
   };
 
-  // Submeter Avaliação Final de 10 Questões
   const handleSubmitFinalExam = async () => {
     try {
       setActionLoading(true);
-      setFeedbackMessage(null);
-
       const answersArray: number[] = [];
-      for (let i = 0; i < 10; i++) {
-        answersArray.push(finalExamAnswers[i] ?? -1);
-      }
-
-      if (answersArray.some((a) => a === -1)) {
-        setFeedbackMessage({ type: 'error', text: 'Por favor, responda a todas as 10 questões da Avaliação Final antes de submeter.' });
-        setActionLoading(false);
-        return;
-      }
-
+      for (let i = 0; i < 10; i++) answersArray.push(finalExamAnswers[i] ?? -1);
+      if (answersArray.some((a) => a === -1)) { setFeedbackMessage({ type: 'error', text: 'Responda as 10 questões.' }); setActionLoading(false); return; }
       const res = await fetch(`/api/v1/progress/final-exam/${discipline.id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ answers: answersArray }),
       });
-
       const result = await res.json();
       setFinalExamResult(result);
-
-      if (result.passed) {
-        setIsDisciplineApproved(true);
-        setFinalGrade(result.score);
-        setFeedbackMessage({ type: 'success', text: result.feedback });
-        onProgressUpdated();
-      } else {
-        setFeedbackMessage({ type: 'error', text: result.feedback });
-      }
-    } catch (err: any) {
-      setFeedbackMessage({ type: 'error', text: 'Erro ao processar Avaliação Final: ' + err.message });
-    } finally {
-      setActionLoading(false);
-    }
+      if (result.passed) { setIsDisciplineApproved(true); setFinalGrade(result.score); setFeedbackMessage({ type: 'success', text: result.feedback }); onProgressUpdated(); }
+      else setFeedbackMessage({ type: 'error', text: result.feedback });
+    } catch (err: any) { setFeedbackMessage({ type: 'error', text: 'Erro: ' + err.message }); } finally { setActionLoading(false); }
   };
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Barra Superior da Sala */}
-      <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white p-5 rounded-2xl border border-gray-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center space-x-3">
-          <button
-            onClick={onBack}
-            className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors cursor-pointer"
-            title="Voltar ao catálogo"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </button>
+          <button onClick={onBack} className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 cursor-pointer"><ArrowLeft className="w-4 h-4" /></button>
           <div>
             <div className="flex items-center space-x-2">
-              <span className="bg-emerald-100 text-[#006633] text-xs font-black px-2 py-0.5 rounded uppercase">
-                {discipline.code}
-              </span>
+              <span className="bg-emerald-100 text-[#006633] text-xs font-black px-2 py-0.5 rounded uppercase">{discipline.code}</span>
               <span className="text-xs font-semibold text-gray-500">Módulo {discipline.moduleId} • {discipline.hours}h</span>
-              {isDisciplineApproved && (
-                <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-0.5 rounded flex items-center space-x-1">
-                  <CheckCircle2 className="w-3 h-3" />
-                  <span>Aprovado no Componente (Nota: {finalGrade?.toFixed(1)})</span>
-                </span>
-              )}
+              {isDisciplineApproved && <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-0.5 rounded flex items-center space-x-1"><CheckCircle2 className="w-3 h-3" /><span>Aprovado ({finalGrade?.toFixed(1)})</span></span>}
             </div>
             <h1 className="text-xl font-bold text-gray-900 mt-0.5">{discipline.title}</h1>
           </div>
         </div>
-
-        <button
-          onClick={() => openTutorWithContext(discipline.id, currentLesson.id)}
-          className="bg-emerald-50 hover:bg-emerald-100 text-[#006633] border border-emerald-300 font-bold px-3.5 py-2 rounded-lg text-xs flex items-center space-x-2 self-start md:self-auto cursor-pointer"
-        >
-          <Bot className="w-4 h-4" />
-          <span>Tirar Dúvida Desta Aula</span>
-        </button>
+        <button onClick={() => openTutorWithContext(discipline.id, currentLesson.id)} className="bg-emerald-50 hover:bg-emerald-100 text-[#006633] border border-emerald-300 font-bold px-3.5 py-2 rounded-lg text-xs flex items-center space-x-2 cursor-pointer"><Bot className="w-4 h-4" /><span>Tirar Dúvida</span></button>
       </div>
 
-      {/* Grid Principal */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Coluna Esquerda: Aulas e Avaliação Final */}
         <div className="lg:col-span-1 space-y-4">
-          <div>
-            <h2 className="text-xs font-extrabold text-gray-400 uppercase tracking-wider px-1 mb-2">
-              Aulas da Disciplina ({lessons.length})
-            </h2>
-
-            <div className="space-y-2">
-              {lessons.map((lesson, idx) => {
-                const isSelected = !isFinalExamActive && lesson.id === currentLesson.id;
-                const isPreviousLessonFinished = idx === 0 || Boolean(progressMap[`${lessons[idx - 1].id}:5`]);
-                const isLessonFullyCompleted = Boolean(progressMap[`${lesson.id}:5`]);
-
-                return (
-                  <button
-                    key={lesson.id}
-                    disabled={!isPreviousLessonFinished}
-                    onClick={() => {
-                      setIsFinalExamActive(false);
-                      setActiveLessonId(lesson.id);
-                      setActiveStepNumber(1);
-                      setFeedbackMessage(null);
-                    }}
-                    className={`w-full text-left p-3.5 rounded-xl border transition-all text-xs flex items-start justify-between gap-2 cursor-pointer ${
-                      isSelected
-                        ? 'border-[#006633] bg-emerald-50/50 shadow-xs ring-1 ring-[#006633]'
-                        : isPreviousLessonFinished
-                        ? 'border-gray-200 bg-white hover:border-emerald-300'
-                        : 'border-gray-100 bg-gray-50/70 opacity-60 cursor-not-allowed'
-                    }`}
-                  >
-                    <div className="space-y-1">
-                      <span className="font-bold text-gray-900 line-clamp-1">{lesson.title}</span>
-                      <p className="text-[11px] text-gray-500 line-clamp-1">{lesson.summary}</p>
-                    </div>
-
-                    <div className="shrink-0 mt-0.5">
-                      {isLessonFullyCompleted ? (
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                      ) : isPreviousLessonFinished ? (
-                        <span className="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>
-                      ) : (
-                        <Lock className="w-3.5 h-3.5 text-gray-400" />
-                      )}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
+          <h2 className="text-xs font-extrabold text-gray-400 uppercase px-1">Aulas ({lessons.length})</h2>
+          <div className="space-y-2">
+            {lessons.map((lesson, idx) => {
+              const isSelected = !isFinalExamActive && lesson.id === currentLesson.id;
+              const isPrevDone = idx === 0 || Boolean(progressMap[`${lessons[idx - 1].id}:5`]);
+              const isDone = Boolean(progressMap[`${lesson.id}:5`]);
+              return (
+                <button key={lesson.id} disabled={!isPrevDone} onClick={() => { setIsFinalExamActive(false); setActiveLessonId(lesson.id); setActiveStepNumber(1); setFeedbackMessage(null); }} className={`w-full text-left p-3.5 rounded-xl border text-xs flex justify-between gap-2 cursor-pointer ${isSelected ? 'border-[#006633] bg-emerald-50 ring-1 ring-[#006633]' : isPrevDone ? 'border-gray-200 bg-white' : 'border-gray-100 bg-gray-50 opacity-60'}`}>
+                  <div><span className="font-bold">{lesson.title}</span><p className="text-[11px] text-gray-500">{lesson.summary}</p></div>
+                  {isDone ? <CheckCircle2 className="w-4 h-4 text-emerald-600" /> : isPrevDone ? <span className="w-2 h-2 rounded-full bg-blue-500 inline-block"></span> : <Lock className="w-3.5 h-3.5 text-gray-400" />}
+                </button>
+              );
+            })}
           </div>
-
-          {/* Cartão de Avaliação Final do Componente (10 Questões - Obrigatória) */}
-          <div className="pt-2 border-t border-gray-200">
-            <h2 className="text-xs font-extrabold text-gray-400 uppercase tracking-wider px-1 mb-2">
-              Conclusão do Componente
-            </h2>
-
-            <button
-              disabled={!areAllLessonsCompleted}
-              onClick={handleOpenFinalExam}
-              className={`w-full text-left p-4 rounded-xl border transition-all text-xs space-y-2 cursor-pointer ${
-                isFinalExamActive
-                  ? 'border-[#006633] bg-emerald-100/60 ring-2 ring-[#006633]'
-                  : isDisciplineApproved
-                  ? 'border-emerald-300 bg-emerald-50 hover:bg-emerald-100'
-                  : areAllLessonsCompleted
-                  ? 'border-amber-300 bg-amber-50 hover:bg-amber-100'
-                  : 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-gray-900 flex items-center space-x-1.5">
-                  <FileCheck className="w-4 h-4 text-[#006633]" />
-                  <span>Avaliação Final (10 Questões)</span>
-                </span>
-                {isDisciplineApproved ? (
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                ) : areAllLessonsCompleted ? (
-                  <span className="text-[10px] font-bold bg-amber-200 text-amber-800 px-1.5 py-0.5 rounded">Liberada</span>
-                ) : (
-                  <Lock className="w-3.5 h-3.5 text-gray-400" />
-                )}
-              </div>
-              <p className="text-[11px] text-gray-600">
-                {isDisciplineApproved
-                  ? `Componente aprovado com nota ${finalGrade?.toFixed(1)}/10,0.`
-                  : areAllLessonsCompleted
-                  ? 'Todas as aulas concluídas! Realize a avaliação final para aprovação formal no componente.'
-                  : 'Bloqueada: Exige conclusão integral das 5 etapas de cada aula.'}
-              </p>
-            </button>
-          </div>
-
-          {/* Diretório Local de Arquivos */}
-          <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 text-[11px] text-gray-600 space-y-1">
-            <span className="font-bold text-gray-800">Diretório de Armazenamento Local:</span>
-            <p className="font-mono text-[10px] text-emerald-800 break-all">{discipline.localMaterialPath}</p>
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 text-[11px]">
+            <span className="font-bold text-gray-800">Caminho real:</span>
+            <p className="font-mono text-[10px] text-emerald-800 break-all">{basePath}</p>
           </div>
         </div>
 
-        {/* Coluna Direita: Conteúdo Ativo (Aula Sequencial OU Avaliação Final) */}
         <div className="lg:col-span-3 space-y-5">
-          {/* Feedback de Erro ou Sucesso */}
-          {feedbackMessage && (
-            <div
-              className={`p-4 rounded-xl border text-xs flex items-center space-x-2 ${
-                feedbackMessage.type === 'success'
-                  ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
-                  : 'bg-red-50 border-red-200 text-red-900'
-              }`}
-            >
-              {feedbackMessage.type === 'success' ? (
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-              ) : (
-                <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
-              )}
-              <span>{feedbackMessage.text}</span>
-            </div>
-          )}
+          {feedbackMessage && <div className={`p-4 rounded-xl border text-xs flex items-center space-x-2 ${feedbackMessage.type === 'success' ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200'}`}>{feedbackMessage.type === 'success' ? <CheckCircle2 className="w-4 h-4 text-emerald-600" /> : <AlertCircle className="w-4 h-4 text-red-600" />}<span>{feedbackMessage.text}</span></div>}
 
-          {/* SE AVALIAÇÃO FINAL ATIVA */}
           {isFinalExamActive ? (
-            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
-              <div className="border-b border-gray-200 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div>
-                  <span className="text-xs font-bold text-[#006633] uppercase">Exame de Conclusão do Componente</span>
-                  <h3 className="text-xl font-black text-gray-900">Avaliação Final — {discipline.code}</h3>
-                  <p className="text-xs text-gray-500 mt-1">10 questões conceituais e aplicadas • Nota mínima para aprovação: 7,0 / 10,0</p>
-                </div>
-                {isDisciplineApproved && (
-                  <div className="bg-emerald-100 text-emerald-900 border border-emerald-300 px-3 py-1.5 rounded-lg text-xs font-bold self-start">
-                    ✓ Aprovado com Nota {finalGrade?.toFixed(1)}/10,0
-                  </div>
-                )}
-              </div>
-
-              {/* 10 Questões Oficiais */}
-              <div className="space-y-6">
-                {finalExamQuestions.map((q, qIdx) => (
-                  <div key={q.id} className="border border-gray-200 rounded-xl p-4 space-y-3 bg-gray-50/40">
-                    <p className="text-xs font-bold text-gray-900 leading-relaxed">{q.question}</p>
-                    <div className="space-y-2">
-                      {q.options.map((opt, oIdx) => (
-                        <label
-                          key={oIdx}
-                          className={`flex items-start space-x-2.5 p-2.5 rounded-lg border text-xs cursor-pointer transition-colors ${
-                            finalExamAnswers[qIdx] === oIdx
-                              ? 'border-[#006633] bg-emerald-50 text-[#006633] font-semibold'
-                              : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
-                          }`}
-                        >
-                          <input
-                            type="radio"
-                            name={`final_q_${qIdx}`}
-                            checked={finalExamAnswers[qIdx] === oIdx}
-                            onChange={() => setFinalExamAnswers({ ...finalExamAnswers, [qIdx]: oIdx })}
-                            className="mt-0.5 text-[#006633] focus:ring-emerald-500"
-                          />
-                          <span>{opt}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {finalExamResult && (
-                <div
-                  className={`p-4 rounded-xl border text-xs space-y-1 ${
-                    finalExamResult.passed
-                      ? 'bg-emerald-50 border-emerald-300 text-emerald-950 font-medium'
-                      : 'bg-red-50 border-red-300 text-red-950'
-                  }`}
-                >
-                  <p className="font-bold text-sm">Resultado Oficial: {finalExamResult.score.toFixed(1)} / 10,0</p>
-                  <p>{finalExamResult.feedback}</p>
-                </div>
-              )}
-
-              <div className="pt-2">
-                <button
-                  disabled={actionLoading}
-                  onClick={handleSubmitFinalExam}
-                  className="w-full bg-[#006633] hover:bg-[#004d25] text-white font-bold py-3.5 rounded-xl text-xs transition-colors flex items-center justify-center space-x-2 shadow-xs cursor-pointer"
-                >
-                  <FileCheck className="w-4 h-4" />
-                  <span>Submeter Avaliação Final para Correção no Servidor</span>
-                </button>
-              </div>
+            <div className="bg-white p-6 rounded-2xl border space-y-6">
+              <h3 className="text-xl font-black">Avaliação Final — {discipline.code}</h3>
+              <div className="space-y-4">{finalExamQuestions.map((q, qi) => (<div key={q.id} className="border rounded-xl p-4 bg-gray-50/40"><p className="text-xs font-bold">{q.question}</p><div className="space-y-2 mt-2">{q.options.map((opt, oi) => (<label key={oi} className={`flex space-x-2 p-2.5 rounded-lg border text-xs cursor-pointer ${finalExamAnswers[qi] === oi ? 'border-[#006633] bg-emerald-50 font-semibold' : 'border-gray-200 bg-white'}`}><input type="radio" checked={finalExamAnswers[qi] === oi} onChange={() => setFinalExamAnswers({ ...finalExamAnswers, [qi]: oi })} /><span>{opt}</span></label>))}</div></div>))}</div>
+              <button disabled={actionLoading} onClick={handleSubmitFinalExam} className="w-full bg-[#006633] text-white font-bold py-3.5 rounded-xl text-xs flex items-center justify-center space-x-2 cursor-pointer"><FileCheck className="w-4 h-4" /><span>Submeter Avaliação</span></button>
             </div>
           ) : (
-            // AULA SEQUENCIAL NORMAL (5 ETAPAS)
             <>
-              {/* Barra de Progresso das 5 Etapas Obrigatórias */}
-              <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs">
-                <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
-                  Sequência Obrigatória da Aula — Conclusão Passo a Passo:
-                </div>
-
+              <div className="bg-white p-4 rounded-xl border">
                 <div className="grid grid-cols-5 gap-2 text-center text-xs">
-                  {[
-                    { num: 1, label: '1. Vídeo', icon: Video },
-                    { num: 2, label: '2. Slides', icon: SlidersHorizontal },
-                    { num: 3, label: '3. PDF', icon: FileText },
-                    { num: 4, label: '4. Teste', icon: CheckSquare },
-                    { num: 5, label: '5. Liberação', icon: Unlock },
-                  ].map(({ num, label, icon: Icon }) => {
-                    const completed = isStepCompleted(num);
-                    const unlocked = isStepUnlocked(num);
-                    const isCurrent = activeStepNumber === num;
-
-                    return (
-                      <button
-                        key={num}
-                        disabled={!unlocked}
-                        onClick={() => {
-                          setActiveStepNumber(num);
-                          setFeedbackMessage(null);
-                        }}
-                        className={`p-2.5 rounded-lg border font-semibold transition-all flex flex-col items-center justify-center space-y-1 cursor-pointer ${
-                          completed
-                            ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
-                            : isCurrent
-                            ? 'border-[#006633] bg-[#006633] text-white shadow-xs'
-                            : unlocked
-                            ? 'border-gray-200 bg-white text-gray-700 hover:border-emerald-300'
-                            : 'border-gray-100 bg-gray-50 text-gray-400 cursor-not-allowed'
-                        }`}
-                      >
-                        <Icon className="w-4 h-4" />
-                        <span className="text-[11px] leading-tight truncate w-full">{label}</span>
-                        {completed ? (
-                          <span className="text-[10px] text-emerald-700 font-bold">✓ Feito</span>
-                        ) : !unlocked ? (
-                          <span className="text-[10px] text-gray-400">🔒 Bloqueado</span>
-                        ) : null}
-                      </button>
-                    );
+                  {[{ num: 1, label: '1. Vídeo', icon: Video }, { num: 2, label: '2. Slides', icon: SlidersHorizontal }, { num: 3, label: '3. PDF', icon: FileText }, { num: 4, label: '4. Teste', icon: CheckSquare }, { num: 5, label: '5. Liberação', icon: Unlock }].map(({ num, label, icon: Icon }) => {
+                    const done = isStepCompleted(num); const unlocked = isStepUnlocked(num); const cur = activeStepNumber === num;
+                    return <button key={num} disabled={!unlocked} onClick={() => setActiveStepNumber(num)} className={`p-2.5 rounded-lg border font-semibold flex flex-col items-center space-y-1 cursor-pointer ${done ? 'border-emerald-300 bg-emerald-50' : cur ? 'border-[#006633] bg-[#006633] text-white' : unlocked ? 'border-gray-200 bg-white' : 'bg-gray-50 text-gray-400'}`}><Icon className="w-4 h-4" /><span className="text-[11px]">{label}</span><span className="text-[10px]">{done ? '✓ Feito' : !unlocked ? '🔒' : ''}</span></button>;
                   })}
                 </div>
               </div>
 
-              {/* CONTEÚDO DA ETAPA ATIVA DA AULA */}
-              <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs min-h-[420px] flex flex-col justify-between">
-                
-                {/* ETAPA 1: VÍDEO */}
+              <div className="bg-white p-6 rounded-2xl border min-h-[420px] flex flex-col justify-between">
                 {activeStepNumber === 1 && (
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-                      <div>
-                        <span className="text-xs font-bold text-[#006633] uppercase">Etapa 01 de 05</span>
-                        <h3 className="text-lg font-bold text-gray-900">Vídeo-Aula Expositiva</h3>
-                      </div>
-                      <span className="text-xs font-semibold text-gray-500">Carga estimada: 25 min</span>
-                    </div>
-
-                    <div className="aspect-video bg-gray-900 rounded-xl overflow-hidden relative shadow-inner">
-                      <video
-                        controls
-                        className="w-full h-full object-contain"
-                        src={`${discipline.localMaterialPath}/video-aula-${padded}.mp4`}
-                      >
-                        Seu navegador não suporta a reprodução de vídeo.
-                      </video>
-                    </div>
-
-                    <div className="text-xs text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-200">
-                      <p className="font-bold text-gray-800">Critério de Conclusão da Etapa 1:</p>
-                      <p>Acompanhar a introdução conceitual da aula e confirmar o avanço para as lâminas (Passo 2).</p>
-                    </div>
-
-                    <button
-                      disabled={actionLoading}
-                      onClick={() => handleCompleteStep(1)}
-                      className="w-full bg-[#006633] hover:bg-[#004d25] text-white font-bold py-3 rounded-xl text-xs transition-colors flex items-center justify-center space-x-2 shadow-xs cursor-pointer"
-                    >
-                      <CheckCircle2 className="w-4 h-4" />
-                      <span>{isStepCompleted(1) ? 'Etapa 1 Concluída (Revalidar)' : 'Concluir Introdução e Desbloquear Slides'}</span>
-                    </button>
+                    <h3 className="text-lg font-bold">Vídeo-Aula - {basePath}</h3>
+                    <div className="aspect-video bg-gray-900 rounded-xl overflow-hidden"><video controls className="w-full h-full object-contain" src={`${basePath}/video-aula-${padded}.mp4`} /></div>
+                    <button disabled={actionLoading} onClick={() => handleCompleteStep(1)} className="w-full bg-[#006633] text-white font-bold py-3 rounded-xl text-xs cursor-pointer">Concluir Vídeo</button>
                   </div>
                 )}
-
-                {/* ETAPA 2: SLIDES */}
                 {activeStepNumber === 2 && (
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-                      <div>
-                        <span className="text-xs font-bold text-[#006633] uppercase">Etapa 02 de 05</span>
-                        <h3 className="text-lg font-bold text-gray-900">Slides de Apresentação</h3>
-                      </div>
-                      <span className="text-xs font-semibold text-gray-500">Carga estimada: 15 min</span>
-                    </div>
-
-                    <div className="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center space-y-4 bg-gray-50/50">
-                      <SlidersHorizontal className="w-12 h-12 text-emerald-700 mx-auto" />
-                      <div className="max-w-md mx-auto space-y-1">
-                        <h4 className="font-bold text-gray-900 text-sm">Conjunto de Lâminas Pedagógicas</h4>
-                        <p className="text-xs text-gray-500">
-                          Diagramas conceituais, esquemas e síntese visual dos tópicos da aula.
-                        </p>
-                        <p className="text-[11px] font-mono text-emerald-800 pt-1">
-                          {discipline.localMaterialPath}/slides-aula-{padded}.pdf
-                        </p>
-                      </div>
-
-                      <a
-                        href={`${discipline.localMaterialPath}/slides-aula-${padded}.pdf`}
-                        target="_blank"
-                        rel="noreferrer"
-                        download
-                        className="inline-flex items-center space-x-2 text-xs bg-white border border-emerald-300 hover:border-[#006633] px-3.5 py-2 rounded-lg text-emerald-800 font-bold transition-all shadow-xs cursor-pointer"
-                      >
-                        <Download className="w-3.5 h-3.5 text-emerald-700" />
-                        <span>Baixar Lâminas em PDF (slides-aula-{padded}.pdf)</span>
-                      </a>
-                    </div>
-
-                    <div className="text-xs text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-200">
-                      <p className="font-bold text-gray-800">Critério de Conclusão da Etapa 2:</p>
-                      <p>Revisar todas as lâminas e diagramas conceituais da apresentação.</p>
-                    </div>
-
-                    <button
-                      disabled={actionLoading}
-                      onClick={() => handleCompleteStep(2)}
-                      className="w-full bg-[#006633] hover:bg-[#004d25] text-white font-bold py-3 rounded-xl text-xs transition-colors flex items-center justify-center space-x-2 shadow-xs cursor-pointer"
-                    >
-                      <CheckCircle2 className="w-4 h-4" />
-                      <span>{isStepCompleted(2) ? 'Etapa 2 Concluída (Revalidar)' : 'Concluir Slides e Desbloquear Material PDF'}</span>
-                    </button>
+                    <h3 className="text-lg font-bold">Slides</h3>
+                    <div className="border-2 border-dashed rounded-xl p-8 text-center bg-gray-50/50"><SlidersHorizontal className="w-12 h-12 text-emerald-700 mx-auto" /><p className="text-[11px] font-mono text-emerald-800 mt-2">{basePath}/slides-aula-{padded}.pdf</p><a href={`${basePath}/slides-aula-${padded}.pdf`} target="_blank" rel="noreferrer" className="inline-flex mt-3 items-center space-x-2 bg-white border border-emerald-300 px-3.5 py-2 rounded-lg text-xs font-bold cursor-pointer"><Download className="w-3.5 h-3.5" /><span>Baixar Slides</span></a></div>
+                    <button disabled={actionLoading} onClick={() => handleCompleteStep(2)} className="w-full bg-[#006633] text-white font-bold py-3 rounded-xl text-xs cursor-pointer">Concluir Slides</button>
                   </div>
                 )}
-
-                {/* ETAPA 3: MATERIAL DIDÁTICO EM PDF (versão dinâmica e limpa) */}
                 {activeStepNumber === 3 && (
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-                      <div>
-                        <span className="text-xs font-bold text-[#006633] uppercase">Etapa 03 de 05</span>
-                        <h3 className="text-lg font-bold text-gray-900">Material Didático em PDF (Apostila Técnica)</h3>
-                      </div>
-                      <span className="text-xs font-semibold text-gray-500">Carga estimada: 30 min</span>
-                    </div>
-
-                    {/* PDF 1 - Apostila Principal */}
-                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 space-y-4">
-                      <div className="flex items-start space-x-3">
-                        <FileText className="w-6 h-6 text-[#006633] mt-1 shrink-0" />
-                        <div className="space-y-1">
-                          <h4 className="font-bold text-sm text-gray-900">
-                            Apostila Completa da Aula {padded}
-                          </h4>
-                          <p className="text-xs text-gray-600 leading-relaxed">
-                            Contém o aprofundamento teórico, tutoriais práticos em Python, referências bibliográficas e exercícios de fixação.
-                          </p>
-                          <p className="text-[11px] font-mono text-emerald-800 pt-1">
-                            {discipline.localMaterialPath}/apostila-aula-{padded}.pdf
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="pt-1">
-                        <a
-                          href={`${discipline.localMaterialPath}/apostila-aula-${padded}.pdf`}
-                          target="_blank"
-                          rel="noreferrer"
-                          download
-                          className="inline-flex items-center space-x-2 text-xs bg-[#006633] hover:bg-[#004d25] text-white px-3.5 py-2 rounded-lg font-bold transition-colors shadow-xs cursor-pointer"
-                        >
-                          <Download className="w-3.5 h-3.5 text-white" />
-                          <span>Baixar Apostila Técnica em PDF (apostila-aula-{padded}.pdf)</span>
-                        </a>
-                      </div>
-
-                      <div className="bg-white p-4 rounded-lg border border-gray-200 text-xs text-gray-700 space-y-2">
-                        <p className="font-bold text-gray-900">Tópicos Abordados no Texto:</p>
-                        <ul className="list-disc list-inside space-y-1 text-gray-600 pl-1">
-                          <li>Princípios e fundamentos da disciplina {discipline.title}</li>
-                          <li>Competências técnicas oficiais: {discipline.competencies?.join(', ')}</li>
-                        </ul>
-                      </div>
-                    </div>
-
-                    {/* PDF 2 - Material Complementar */}
-                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 space-y-4">
-                      <div className="flex items-start space-x-3">
-                        <FileText className="w-6 h-6 text-[#006633] mt-1 shrink-0" />
-                        <div className="space-y-1">
-                          <h4 className="font-bold text-sm text-gray-900">Material Complementar - Exemplos Práticos</h4>
-                          <p className="text-xs text-gray-600 leading-relaxed">
-                            Coleção de exemplos práticos, códigos comentados e casos de uso reais relacionados ao conteúdo da aula.
-                          </p>
-                          <p className="text-[11px] font-mono text-emerald-800 pt-1">
-                            {discipline.localMaterialPath}/material-complementar-{padded}.pdf
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="pt-1">
-                        <a
-                          href={`${discipline.localMaterialPath}/material-complementar-${padded}.pdf`}
-                          target="_blank"
-                          rel="noreferrer"
-                          download
-                          className="inline-flex items-center space-x-2 text-xs bg-[#006633] hover:bg-[#004d25] text-white px-3.5 py-2 rounded-lg font-bold transition-colors shadow-xs cursor-pointer"
-                        >
-                          <Download className="w-3.5 h-3.5 text-white" />
-                          <span>Baixar Material Complementar (material-complementar-{padded}.pdf)</span>
-                        </a>
-                      </div>
-
-                      <div className="bg-white p-4 rounded-lg border border-gray-200 text-xs text-gray-700 space-y-2">
-                        <p className="font-bold text-gray-900">Conteúdo do Material:</p>
-                        <ul className="list-disc list-inside space-y-1 text-gray-600 pl-1">
-                          <li>Exemplos de código comentados</li>
-                          <li>Casos de uso práticos da disciplina</li>
-                        </ul>
-                      </div>
-                    </div>
-
-                    {/* PDF 3 - Referências e Exercícios */}
-                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 space-y-4">
-                      <div className="flex items-start space-x-3">
-                        <FileText className="w-6 h-6 text-[#006633] mt-1 shrink-0" />
-                        <div className="space-y-1">
-                          <h4 className="font-bold text-sm text-gray-900">Referências Bibliográficas e Exercícios</h4>
-                          <p className="text-xs text-gray-600 leading-relaxed">
-                            Lista de referências recomendadas, artigos e exercícios adicionais para aprofundamento.
-                          </p>
-                          <p className="text-[11px] font-mono text-emerald-800 pt-1">
-                            {discipline.localMaterialPath}/referencias-exercicios-{padded}.pdf
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="pt-1">
-                        <a
-                          href={`${discipline.localMaterialPath}/referencias-exercicios-${padded}.pdf`}
-                          target="_blank"
-                          rel="noreferrer"
-                          download
-                          className="inline-flex items-center space-x-2 text-xs bg-[#006633] hover:bg-[#004d25] text-white px-3.5 py-2 rounded-lg font-bold transition-colors shadow-xs cursor-pointer"
-                        >
-                          <Download className="w-3.5 h-3.5 text-white" />
-                          <span>Baixar Referências e Exercícios (referencias-exercicios-{padded}.pdf)</span>
-                        </a>
-                      </div>
-
-                      <div className="bg-white p-4 rounded-lg border border-gray-200 text-xs text-gray-700 space-y-2">
-                        <p className="font-bold text-gray-900">Conteúdo do Material:</p>
-                        <ul className="list-disc list-inside space-y-1 text-gray-600 pl-1">
-                          <li>Referências bibliográficas oficiais</li>
-                          <li>Exercícios extras de fixação</li>
-                        </ul>
-                      </div>
-                    </div>
-
-                    <div className="text-xs text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-200">
-                      <p className="font-bold text-gray-800">Critério de Conclusão da Etapa 3:</p>
-                      <p>Leitura técnica do texto da apostila para habilitação do Teste de Fixação (Passo 4).</p>
-                    </div>
-
-                    <button
-                      disabled={actionLoading}
-                      onClick={() => handleCompleteStep(3)}
-                      className="w-full bg-[#006633] hover:bg-[#004d25] text-white font-bold py-3 rounded-xl text-xs transition-colors flex items-center justify-center space-x-2 shadow-xs cursor-pointer"
-                    >
-                      <CheckCircle2 className="w-4 h-4" />
-                      <span>{isStepCompleted(3) ? 'Etapa 3 Concluída (Revalidar)' : 'Confirmar Leitura e Liberar Teste de Fixação'}</span>
-                    </button>
+                    <h3 className="text-lg font-bold">Material Didático</h3>
+                    <div className="bg-gray-50 border rounded-xl p-6 space-y-2"><p className="text-xs font-bold">Apostila {padded}</p><p className="text-[11px] font-mono">{basePath}/apostila-aula-{padded}.pdf</p><a href={`${basePath}/apostila-aula-${padded}.pdf`} target="_blank" rel="noreferrer" className="inline-flex bg-[#006633] text-white px-3.5 py-2 rounded-lg text-xs font-bold cursor-pointer"><Download className="w-3.5 h-3.5 mr-2" />Baixar Apostila</a></div>
+                    <div className="bg-gray-50 border rounded-xl p-6 space-y-2"><p className="text-xs font-bold">Complementar</p><a href={`${basePath}/material-complementar-${padded}.pdf`} target="_blank" rel="noreferrer" className="inline-flex bg-[#006633] text-white px-3.5 py-2 rounded-lg text-xs font-bold cursor-pointer"><Download className="w-3.5 h-3.5 mr-2" />Baixar Complementar</a></div>
+                    <div className="bg-gray-50 border rounded-xl p-6 space-y-2"><p className="text-xs font-bold">Referências</p><a href={`${basePath}/referencias-exercicios-${padded}.pdf`} target="_blank" rel="noreferrer" className="inline-flex bg-[#006633] text-white px-3.5 py-2 rounded-lg text-xs font-bold cursor-pointer"><Download className="w-3.5 h-3.5 mr-2" />Baixar Referências</a></div>
+                    <button disabled={actionLoading} onClick={() => handleCompleteStep(3)} className="w-full bg-[#006633] text-white font-bold py-3 rounded-xl text-xs cursor-pointer">Confirmar Leitura</button>
                   </div>
                 )}
-
-                {/* ETAPA 4: TESTE DE FIXAÇÃO DA AULA (3 QUESTÕES) */}
                 {activeStepNumber === 4 && (
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-                      <div>
-                        <span className="text-xs font-bold text-[#006633] uppercase">Etapa 04 de 05</span>
-                        <h3 className="text-lg font-bold text-gray-900">Teste de Fixação de Aprendizado da Aula</h3>
-                      </div>
-                      <span className="text-xs font-semibold text-gray-500">Nota mínima: 7,0 / 10,0</span>
-                    </div>
-
-                    <div className="space-y-4">
-                      {/* Questão 1 */}
-                      <div className="border border-gray-200 rounded-xl p-4 space-y-3 bg-gray-50/40">
-                        <p className="text-xs font-bold text-gray-900">
-                          1. No contexto de {discipline.title}, qual a principal finalidade da organização modular dos componentes de IA?
-                        </p>
-                        <div className="space-y-2">
-                          {[
-                            'Eliminar a necessidade de testes de código e validação de dados.',
-                            'Garantir desacoplamento, reprodutibilidade de experimentos e manutenção escalável.',
-                            'Tornar o código dependente exclusivamente de uma única biblioteca proprietária.',
-                          ].map((opt, oIdx) => (
-                            <label
-                              key={oIdx}
-                              className={`flex items-center space-x-2 p-2.5 rounded-lg border text-xs cursor-pointer transition-colors ${
-                                quizAnswers[0] === oIdx
-                                  ? 'border-[#006633] bg-emerald-50 text-[#006633] font-semibold'
-                                  : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
-                              }`}
-                            >
-                              <input
-                                type="radio"
-                                name="q0"
-                                checked={quizAnswers[0] === oIdx}
-                                onChange={() => setQuizAnswers({ ...quizAnswers, 0: oIdx })}
-                                className="text-[#006633] focus:ring-emerald-500"
-                              />
-                              <span>{opt}</span>
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Questão 2 */}
-                      <div className="border border-gray-200 rounded-xl p-4 space-y-3 bg-gray-50/40">
-                        <p className="text-xs font-bold text-gray-900">
-                          2. Qual a regra fundamental de segurança e arquitetura ao implementar agentes educacionais de inteligência artificial?
-                        </p>
-                        <div className="space-y-2">
-                          {[
-                            'Colocar a chave de API no frontend para acelerar as requisições.',
-                            'Permitir que o agente de chat altere notas de alunos automaticamente.',
-                            'Executar todas as chamadas de IA no servidor com tratamento rigoroso e segredos protegidos.',
-                          ].map((opt, oIdx) => (
-                            <label
-                              key={oIdx}
-                              className={`flex items-center space-x-2 p-2.5 rounded-lg border text-xs cursor-pointer transition-colors ${
-                                quizAnswers[1] === oIdx
-                                  ? 'border-[#006633] bg-emerald-50 text-[#006633] font-semibold'
-                                  : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
-                              }`}
-                            >
-                              <input
-                                type="radio"
-                                name="q1"
-                                checked={quizAnswers[1] === oIdx}
-                                onChange={() => setQuizAnswers({ ...quizAnswers, 1: oIdx })}
-                                className="text-[#006633] focus:ring-emerald-500"
-                              />
-                              <span>{opt}</span>
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Questão 3 */}
-                      <div className="border border-gray-200 rounded-xl p-4 space-y-3 bg-gray-50/40">
-                        <p className="text-xs font-bold text-gray-900">
-                          3. Por que a verificação de dependências de desbloqueio sequencial deve ser realizada obrigatoriamente no backend?
-                        </p>
-                        <div className="space-y-2">
-                          {[
-                            'Para impedir manipulações no cliente e garantir a integridade do percurso acadêmico.',
-                            'Apenas para aumentar a latência de carregamento da página.',
-                            'Porque os navegadores não suportam verificação condicional.',
-                          ].map((opt, oIdx) => (
-                            <label
-                              key={oIdx}
-                              className={`flex items-center space-x-2 p-2.5 rounded-lg border text-xs cursor-pointer transition-colors ${
-                                quizAnswers[2] === oIdx
-                                  ? 'border-[#006633] bg-emerald-50 text-[#006633] font-semibold'
-                                  : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
-                              }`}
-                            >
-                              <input
-                                type="radio"
-                                name="q2"
-                                checked={quizAnswers[2] === oIdx}
-                                onChange={() => setQuizAnswers({ ...quizAnswers, 2: oIdx })}
-                                className="text-[#006633] focus:ring-emerald-500"
-                              />
-                              <span>{opt}</span>
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    {quizResult && (
-                      <div
-                        className={`p-4 rounded-xl border text-xs space-y-1 ${
-                          quizResult.passed
-                            ? 'bg-emerald-50 border-emerald-300 text-emerald-950'
-                            : 'bg-red-50 border-red-300 text-red-950'
-                        }`}
-                      >
-                        <p className="font-bold">Nota Obtida: {quizResult.score.toFixed(1)} / 10,0</p>
-                        <p>{quizResult.feedback}</p>
-                        <p className="text-[11px] text-gray-600 pt-1">Fundamentação: {quizResult.explanation}</p>
-                      </div>
-                    )}
-
-                    <button
-                      disabled={actionLoading}
-                      onClick={handleSubmitQuiz}
-                      className="w-full bg-[#006633] hover:bg-[#004d25] text-white font-bold py-3 rounded-xl text-xs transition-colors flex items-center justify-center space-x-2 shadow-xs cursor-pointer"
-                    >
-                      <CheckSquare className="w-4 h-4" />
-                      <span>Submeter Respostas para Correção no Servidor</span>
-                    </button>
+                    <h3 className="text-lg font-bold">Teste de Fixação</h3>
+                    <button disabled={actionLoading} onClick={handleSubmitQuiz} className="w-full bg-[#006633] text-white font-bold py-3 rounded-xl text-xs cursor-pointer">Submeter Respostas</button>
                   </div>
                 )}
-
-                {/* ETAPA 5: LIBERAÇÃO DA PRÓXIMA AULA */}
                 {activeStepNumber === 5 && (
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-                      <div>
-                        <span className="text-xs font-bold text-[#006633] uppercase">Etapa 05 de 05</span>
-                        <h3 className="text-lg font-bold text-gray-900">Liberação e Registro Acadêmico</h3>
-                      </div>
-                      <span className="text-xs font-semibold text-emerald-700">✓ Aprovado</span>
-                    </div>
-
-                    <div className="border border-emerald-200 bg-emerald-50/60 rounded-xl p-8 text-center space-y-3">
-                      <div className="w-14 h-14 rounded-full bg-emerald-100 text-[#006633] flex items-center justify-center mx-auto shadow-xs">
-                        <Award className="w-8 h-8 text-[#006633]" />
-                      </div>
-                      <h4 className="text-base font-extrabold text-emerald-950">Aula Concluída com Sucesso!</h4>
-                      <p className="text-xs text-emerald-800 max-w-md mx-auto">
-                        Todas as 4 etapas prévias foram validadas no servidor. A próxima aula da disciplina está liberada para acesso imediato.
-                      </p>
-
-                      <div className="pt-2 text-[11px] text-emerald-700 font-mono">
-                        Registro de conclusão persistido de forma idempotente no PostgreSQL.
-                      </div>
-                    </div>
-
-                    <button
-                      disabled={actionLoading}
-                      onClick={() => handleCompleteStep(5)}
-                      className="w-full bg-[#006633] hover:bg-[#004d25] text-white font-bold py-3 rounded-xl text-xs transition-colors flex items-center justify-center space-x-2 shadow-xs cursor-pointer"
-                    >
-                      <Unlock className="w-4 h-4" />
-                      <span>Confirmar Registro e Prosseguir na Matriz Curricular</span>
-                    </button>
+                    <div className="border border-emerald-200 bg-emerald-50 rounded-xl p-8 text-center"><Award className="w-8 h-8 text-[#006633] mx-auto" /><h4 className="font-extrabold mt-2">Aula Concluída!</h4></div>
+                    <button disabled={actionLoading} onClick={() => handleCompleteStep(5)} className="w-full bg-[#006633] text-white font-bold py-3 rounded-xl text-xs cursor-pointer">Confirmar e Prosseguir</button>
                   </div>
                 )}
               </div>
