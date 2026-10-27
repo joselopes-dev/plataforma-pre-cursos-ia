@@ -1,12 +1,22 @@
-# PYTHON-103: Programacao em Python Aplicada a IA
+# PYTHON-103: Python Aplicado a IA
 
-Acervo didático local para estudo, laboratórios e suporte via Tutor IA com RAG.
+Pasta: `modulo-1/03-python`
 
-**Aviso:** Material didático experimental de desenvolvimento — aguardando homologação institucional.
+## Arquivos desta aula
 
-Arquivos disponíveis no diretório:
-- `apostila-python-aplicado-ia.pdf`: Apostila técnica completa em formato PDF 1.4
-- `apostila-aula-01.pdf`: Material de apoio da aula 01
-- `slides-aula-01.pdf`: Lâminas didáticas sintetizadas em PDF para aula 01
-- `material-estudo-experimental.txt`: Texto estruturado para indexação vetorial e lexical
-- `apostila-aula-01.txt`: Transcrição textual da aula 01
+- `video-aula-03.mp4` — Vídeo-aula expositiva
+- `slides-aula-03.pdf` — Lâminas de apresentação
+- `apostila-aula-03.pdf` — Apostila técnica completa
+- `apostila-aula-03.txt` — Versão texto da apostila
+- `material-complementar-03.pdf` — Exemplos práticos
+- `referencias-exercicios-03.pdf` — Referências e exercícios
+- `material-estudo-experimental03.txt` — Roteiro experimental
+
+## Pré-requisitos
+
+- Concluir a aula anterior (quando houver).
+- Ambiente de desenvolvimento configurado conforme a disciplina.
+
+## Observações
+
+Material gerado automaticamente pelo seed do projeto.

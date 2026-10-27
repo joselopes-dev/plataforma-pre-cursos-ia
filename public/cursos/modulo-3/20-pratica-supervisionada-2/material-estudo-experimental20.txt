@@ -1,0 +1,11 @@
+Material de Estudo Experimental - PPS-308: Pratica Supervisionada II
+==================================================
+
+Roteiro prático e exercícios hands-on da aula.
+
+TCC
+Full Stack IA Deploy Documentacao Banca nota 7.
+
+Instruções:
+- Execute os exemplos no ambiente indicado.
+- Anote resultados e dúvidas para o tutor.

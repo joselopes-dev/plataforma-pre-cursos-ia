@@ -1,12 +1,22 @@
-# MET-205: Metodologia para Elaboracao de Producoes Tecnicas
+# MET-205: Metodologia Tecnica
 
-Acervo didático local para estudo, laboratórios e suporte via Tutor IA com RAG.
+Pasta: `modulo-2/11-metodologia`
 
-**Aviso:** Material didático experimental de desenvolvimento — aguardando homologação institucional.
+## Arquivos desta aula
 
-Arquivos disponíveis no diretório:
-- `apostila-metodologia-tecnica.pdf`: Apostila técnica completa em formato PDF 1.4
-- `apostila-aula-01.pdf`: Material de apoio da aula 01
-- `slides-aula-01.pdf`: Lâminas didáticas sintetizadas em PDF para aula 01
-- `material-estudo-experimental.txt`: Texto estruturado para indexação vetorial e lexical
-- `apostila-aula-01.txt`: Transcrição textual da aula 01
+- `video-aula-11.mp4` — Vídeo-aula expositiva
+- `slides-aula-11.pdf` — Lâminas de apresentação
+- `apostila-aula-11.pdf` — Apostila técnica completa
+- `apostila-aula-11.txt` — Versão texto da apostila
+- `material-complementar-11.pdf` — Exemplos práticos
+- `referencias-exercicios-11.pdf` — Referências e exercícios
+- `material-estudo-experimental11.txt` — Roteiro experimental
+
+## Pré-requisitos
+
+- Concluir a aula anterior (quando houver).
+- Ambiente de desenvolvimento configurado conforme a disciplina.
+
+## Observações
+
+Material gerado automaticamente pelo seed do projeto.

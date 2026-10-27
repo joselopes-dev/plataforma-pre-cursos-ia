@@ -1,0 +1,8 @@
+MAT-105: Matematica e Estatistica
+=================================
+
+--- Página 1 ---
+Algebra Linear
+
+Tensores, produto escalar, SVD, PCA, Bayes.
+

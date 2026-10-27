@@ -1,0 +1,11 @@
+Material de Estudo Experimental - LOG-102: Logica de Programacao
+==================================================
+
+Roteiro prático e exercícios hands-on da aula.
+
+Big-O e Estruturas
+O1 OlogN NlogN, vetores, matrizes, funcoes puras.
+
+Instruções:
+- Execute os exemplos no ambiente indicado.
+- Anote resultados e dúvidas para o tutor.

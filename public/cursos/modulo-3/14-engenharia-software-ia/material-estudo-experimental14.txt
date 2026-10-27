@@ -1,0 +1,11 @@
+Material de Estudo Experimental - ES-302: Engenharia de Software para IA
+==================================================
+
+Roteiro prático e exercícios hands-on da aula.
+
+Engenharia
+SOLID TDD REST Docker.
+
+Instruções:
+- Execute os exemplos no ambiente indicado.
+- Anote resultados e dúvidas para o tutor.

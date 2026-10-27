@@ -1,0 +1,11 @@
+Material de Estudo Experimental - MET-205: Metodologia Tecnica
+==================================================
+
+Roteiro prático e exercícios hands-on da aula.
+
+ABNT
+NBR 10719 Model Cards comunicacao de resultados.
+
+Instruções:
+- Execute os exemplos no ambiente indicado.
+- Anote resultados e dúvidas para o tutor.

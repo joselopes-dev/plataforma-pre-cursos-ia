@@ -1,0 +1,11 @@
+Material de Estudo Experimental - CD-201: Python para Ciencia de Dados
+==================================================
+
+Roteiro prático e exercícios hands-on da aula.
+
+Pandas e Visualizacao
+DataFrames, Matplotlib Seaborn, Pipeline ColumnTransformer.
+
+Instruções:
+- Execute os exemplos no ambiente indicado.
+- Anote resultados e dúvidas para o tutor.

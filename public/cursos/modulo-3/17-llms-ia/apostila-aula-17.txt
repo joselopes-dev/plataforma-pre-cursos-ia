@@ -1,0 +1,8 @@
+LLM-305: LLMs e IA Generativa
+=============================
+
+--- Página 1 ---
+LLMs
+
+Transformer Q K V Prompt RAG Gemini.
+

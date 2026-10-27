@@ -1,0 +1,11 @@
+Material de Estudo Experimental - PLN-204: PLN e Chatbots
+==================================================
+
+Roteiro prático e exercícios hands-on da aula.
+
+PLN
+TFIDF Word2Vec intents NER BLEU.
+
+Instruções:
+- Execute os exemplos no ambiente indicado.
+- Anote resultados e dúvidas para o tutor.

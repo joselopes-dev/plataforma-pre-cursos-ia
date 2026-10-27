@@ -1,0 +1,11 @@
+Material de Estudo Experimental - SEG-301: Seguranca e LGPD
+==================================================
+
+Roteiro prático e exercícios hands-on da aula.
+
+LGPD
+Finalidade Adequacao k-Anonimato Privacidade Diferencial.
+
+Instruções:
+- Execute os exemplos no ambiente indicado.
+- Anote resultados e dúvidas para o tutor.

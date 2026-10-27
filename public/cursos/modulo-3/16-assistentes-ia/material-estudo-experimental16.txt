@@ -1,0 +1,11 @@
+Material de Estudo Experimental - ASS-304: Assistentes IA
+==================================================
+
+Roteiro prático e exercícios hands-on da aula.
+
+Agentes
+ReAct Tool Use memoria Guardrails.
+
+Instruções:
+- Execute os exemplos no ambiente indicado.
+- Anote resultados e dúvidas para o tutor.

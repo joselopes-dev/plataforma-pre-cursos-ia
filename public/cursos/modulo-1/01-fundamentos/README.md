@@ -1,14 +1,22 @@
 # INF-101: Fundamentos de Informatica e Linux CLI
 
-Acervo didático local para estudo, laboratórios e suporte via Tutor IA com RAG.
+Pasta: `modulo-1/01-fundamentos`
 
-**Aviso:** Material didático experimental de desenvolvimento — aguardando homologação institucional.
+## Arquivos desta aula
 
-Arquivos disponíveis no diretório:
-- `apostila-sistemas-operacionais.pdf`: Apostila técnica completa em formato PDF 1.4
-- `apostila-aula-01.pdf`: Material de apoio da aula 01
-- `apostila-ferramentas-de-programacao.pdf`: Material de apoio da aula 01
-- `slides-aula-01.pdf`: Lâminas didáticas sintetizadas em PDF para aula 01
-- `material-estudo-experimental.txt`: Texto estruturado para indexação vetorial e lexical
-- `apostila-aula-01.txt`: Transcrição textual da aula 01
-- `video-aula-01.mp4`: Video-aula expositiva da aula 01
+- `video-aula-01.mp4` — Vídeo-aula expositiva
+- `slides-aula-01.pdf` — Lâminas de apresentação
+- `apostila-aula-01.pdf` — Apostila técnica completa
+- `apostila-aula-01.txt` — Versão texto da apostila
+- `material-complementar-01.pdf` — Exemplos práticos
+- `referencias-exercicios-01.pdf` — Referências e exercícios
+- `material-estudo-experimental.txt` — Roteiro experimental
+
+## Pré-requisitos
+
+- Concluir a aula anterior (quando houver).
+- Ambiente de desenvolvimento configurado conforme a disciplina.
+
+## Observações
+
+Material gerado automaticamente pelo seed do projeto.

@@ -1,0 +1,8 @@
+DL-203: Deep Learning
+=====================
+
+--- Página 1 ---
+Redes Neurais
+
+MLP Backprop ReLU Adam Dropout CNN LSTM PyTorch.
+

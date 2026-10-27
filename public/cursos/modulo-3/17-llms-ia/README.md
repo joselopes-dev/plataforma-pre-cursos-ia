@@ -1,12 +1,22 @@
-# LLM-305: LLMs e Inteligencia Artificial Generativa
+# LLM-305: LLMs e IA Generativa
 
-Acervo didático local para estudo, laboratórios e suporte via Tutor IA com RAG.
+Pasta: `modulo-3/17-llms-ia`
 
-**Aviso:** Material didático experimental de desenvolvimento — aguardando homologação institucional.
+## Arquivos desta aula
 
-Arquivos disponíveis no diretório:
-- `apostila-llms-inteligencia-artificial.pdf`: Apostila técnica completa em formato PDF 1.4
-- `apostila-aula-01.pdf`: Material de apoio da aula 01
-- `slides-aula-01.pdf`: Lâminas didáticas sintetizadas em PDF para aula 01
-- `material-estudo-experimental.txt`: Texto estruturado para indexação vetorial e lexical
-- `apostila-aula-01.txt`: Transcrição textual da aula 01
+- `video-aula-17.mp4` — Vídeo-aula expositiva
+- `slides-aula-17.pdf` — Lâminas de apresentação
+- `apostila-aula-17.pdf` — Apostila técnica completa
+- `apostila-aula-17.txt` — Versão texto da apostila
+- `material-complementar-17.pdf` — Exemplos práticos
+- `referencias-exercicios-17.pdf` — Referências e exercícios
+- `material-estudo-experimental17.txt` — Roteiro experimental
+
+## Pré-requisitos
+
+- Concluir a aula anterior (quando houver).
+- Ambiente de desenvolvimento configurado conforme a disciplina.
+
+## Observações
+
+Material gerado automaticamente pelo seed do projeto.

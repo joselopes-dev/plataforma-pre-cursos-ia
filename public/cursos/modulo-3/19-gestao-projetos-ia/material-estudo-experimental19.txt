@@ -1,0 +1,11 @@
+Material de Estudo Experimental - GP-307: Gestao de Projetos IA
+==================================================
+
+Roteiro prático e exercícios hands-on da aula.
+
+Gestao
+Agile CRISP-DM KPIs OKRs riscos.
+
+Instruções:
+- Execute os exemplos no ambiente indicado.
+- Anote resultados e dúvidas para o tutor.

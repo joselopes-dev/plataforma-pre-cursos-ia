@@ -1,12 +1,22 @@
-# PLN-204: Processamento de Linguagem Natural e Chatbots
+# PLN-204: PLN e Chatbots
 
-Acervo didático local para estudo, laboratórios e suporte via Tutor IA com RAG.
+Pasta: `modulo-2/10-pln-chatbots`
 
-**Aviso:** Material didático experimental de desenvolvimento — aguardando homologação institucional.
+## Arquivos desta aula
 
-Arquivos disponíveis no diretório:
-- `apostila-pln-chatbots.pdf`: Apostila técnica completa em formato PDF 1.4
-- `apostila-aula-01.pdf`: Material de apoio da aula 01
-- `slides-aula-01.pdf`: Lâminas didáticas sintetizadas em PDF para aula 01
-- `material-estudo-experimental.txt`: Texto estruturado para indexação vetorial e lexical
-- `apostila-aula-01.txt`: Transcrição textual da aula 01
+- `video-aula-10.mp4` — Vídeo-aula expositiva
+- `slides-aula-10.pdf` — Lâminas de apresentação
+- `apostila-aula-10.pdf` — Apostila técnica completa
+- `apostila-aula-10.txt` — Versão texto da apostila
+- `material-complementar-10.pdf` — Exemplos práticos
+- `referencias-exercicios-10.pdf` — Referências e exercícios
+- `material-estudo-experimental10.txt` — Roteiro experimental
+
+## Pré-requisitos
+
+- Concluir a aula anterior (quando houver).
+- Ambiente de desenvolvimento configurado conforme a disciplina.
+
+## Observações
+
+Material gerado automaticamente pelo seed do projeto.

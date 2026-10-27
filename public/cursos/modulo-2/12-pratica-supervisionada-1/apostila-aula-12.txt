@@ -1,0 +1,8 @@
+PPS-206: Pratica Supervisionada I
+=================================
+
+--- Página 1 ---
+CRISP-DM
+
+Negocio Dados Preparacao Modelagem Avaliacao.
+

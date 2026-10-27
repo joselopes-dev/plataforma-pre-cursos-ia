@@ -1,0 +1,11 @@
+Material de Estudo Experimental - DL-203: Deep Learning
+==================================================
+
+Roteiro prático e exercícios hands-on da aula.
+
+Redes Neurais
+MLP Backprop ReLU Adam Dropout CNN LSTM PyTorch.
+
+Instruções:
+- Execute os exemplos no ambiente indicado.
+- Anote resultados e dúvidas para o tutor.

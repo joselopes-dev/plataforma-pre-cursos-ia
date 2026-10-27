@@ -1,12 +1,22 @@
-# PPS-206: Pratica Profissional Supervisionada I
+# PPS-206: Pratica Supervisionada I
 
-Acervo didático local para estudo, laboratórios e suporte via Tutor IA com RAG.
+Pasta: `modulo-2/12-pratica-supervisionada-1`
 
-**Aviso:** Material didático experimental de desenvolvimento — aguardando homologação institucional.
+## Arquivos desta aula
 
-Arquivos disponíveis no diretório:
-- `apostila-pratica-supervisionada-1.pdf`: Apostila técnica completa em formato PDF 1.4
-- `apostila-aula-01.pdf`: Material de apoio da aula 01
-- `slides-aula-01.pdf`: Lâminas didáticas sintetizadas em PDF para aula 01
-- `material-estudo-experimental.txt`: Texto estruturado para indexação vetorial e lexical
-- `apostila-aula-01.txt`: Transcrição textual da aula 01
+- `video-aula-12.mp4` — Vídeo-aula expositiva
+- `slides-aula-12.pdf` — Lâminas de apresentação
+- `apostila-aula-12.pdf` — Apostila técnica completa
+- `apostila-aula-12.txt` — Versão texto da apostila
+- `material-complementar-12.pdf` — Exemplos práticos
+- `referencias-exercicios-12.pdf` — Referências e exercícios
+- `material-estudo-experimental12.txt` — Roteiro experimental
+
+## Pré-requisitos
+
+- Concluir a aula anterior (quando houver).
+- Ambiente de desenvolvimento configurado conforme a disciplina.
+
+## Observações
+
+Material gerado automaticamente pelo seed do projeto.

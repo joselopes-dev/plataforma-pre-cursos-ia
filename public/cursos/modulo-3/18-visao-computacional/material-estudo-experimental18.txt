@@ -1,0 +1,11 @@
+Material de Estudo Experimental - VIS-306: Visao Computacional
+==================================================
+
+Roteiro prático e exercícios hands-on da aula.
+
+Visao
+OpenCV YOLO U-Net Data Augmentation.
+
+Instruções:
+- Execute os exemplos no ambiente indicado.
+- Anote resultados e dúvidas para o tutor.
