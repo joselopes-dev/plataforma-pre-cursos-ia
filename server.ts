@@ -5,7 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import express from 'express';
 import { createExpressApp } from './src/server/app.ts';
-import { seedAllCourseMaterials } from './src/server/seed-course-materials.ts';
+import { seedAllCourseMaterials } from './src/server/seed-course-materials.ts'
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
