@@ -69,7 +69,7 @@ function generateTextContent(title: string, pages: Array<{ header: string; text:
 }
 
 export const ALL_DISCIPLINES_MATERIALS = [
-  { dir: 'modulo-1/01-fundamentos', number: '01', title: 'INF-101: Fundamentos de Informatica e Linux CLI', pages: [{ header: 'Arquitetura e Linux', text: 'Hardware, GPU, Tensor Cores, Linux CLI ls cd mkdir ps nvidia-smi, Git e venv.' }] },
+  { dir: 'modulo-1/01-fundamentos/aula-01.pdf', number: '01', title: 'INF-101: Fundamentos de Informatica e Linux CLI', pages: [{ header: 'Arquitetura e Linux', text: 'Hardware, GPU, Tensor Cores, Linux CLI ls cd mkdir ps nvidia-smi, Git e venv.' }] },
   { dir: 'modulo-1/02-logica', number: '02', title: 'LOG-102: Logica de Programacao', pages: [{ header: 'Big-O e Estruturas', text: 'O1 OlogN NlogN, vetores, matrizes, funcoes puras.' }] },
   { dir: 'modulo-1/03-python', number: '03', title: 'PYTHON-103: Python Aplicado a IA', pages: [{ header: 'Python Cientifico', text: 'Listas, dicts, NumPy ndarray vetorizado, Pandas DataFrame, OOP fit predict.' }] },
   { dir: 'modulo-1/04-banco-dados', number: '04', title: 'BD-104: Bancos de Dados', pages: [{ header: 'Relacional e Vetorial', text: 'PostgreSQL ACID, MongoDB Redis pgvector RAG.' }] },
