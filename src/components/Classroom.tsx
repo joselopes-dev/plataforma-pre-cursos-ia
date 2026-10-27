@@ -111,9 +111,22 @@ export const Classroom: React.FC<ClassroomProps> = ({
   const { discipline, lessons } = disciplineData;
   const currentLesson = lessons.find((l) => l.id === activeLessonId) || lessons[0];
 
-  // Número da aula atual (01, 02, 03...) baseado na posição da lição
-  const lessonNumber = (lessons.findIndex((l) => l.id === currentLesson.id) + 1) || 1;
-  const padded = String(lessonNumber).padStart(2, '0');
+  // ============================================================
+  // CORREÇÃO DEFINITIVA: extrai o número da pasta a partir do localMaterialPath
+  // Ex: "/cursos/modulo-1/02-logica" ou "cursos\modulo-1\02-logica" → "02"
+  // ============================================================
+  const normalizePath = (path: string): string =>
+    path.replace(/\\/g, '/').replace(/\/+$/, '');
+
+  const getPaddedFromPath = (path: string): string => {
+    const folder = normalizePath(path).split('/').filter(Boolean).pop() || '';
+    const match = folder.match(/^(\d+)/);
+    return match ? match[1].padStart(2, '0') : '01';
+  };
+
+  const materialBase = normalizePath(discipline.localMaterialPath || '');
+  const padded = getPaddedFromPath(discipline.localMaterialPath || '');
+  // ============================================================
 
   // Verifica se todas as aulas da disciplina foram concluídas para liberar a Avaliação Final de 10 Questões
   const areAllLessonsCompleted = lessons.every((l) => Boolean(progressMap[`${l.id}:5`]));
@@ -418,7 +431,7 @@ export const Classroom: React.FC<ClassroomProps> = ({
           {/* Diretório Local de Arquivos */}
           <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 text-[11px] text-gray-600 space-y-1">
             <span className="font-bold text-gray-800">Diretório de Armazenamento Local:</span>
-            <p className="font-mono text-[10px] text-emerald-800 break-all">{discipline.localMaterialPath}</p>
+            <p className="font-mono text-[10px] text-emerald-800 break-all">{materialBase}</p>
           </div>
         </div>
 
@@ -580,9 +593,10 @@ export const Classroom: React.FC<ClassroomProps> = ({
 
                     <div className="aspect-video bg-gray-900 rounded-xl overflow-hidden relative shadow-inner">
                       <video
+                        key={`${materialBase}-${padded}`} // força remount ao trocar de disciplina
                         controls
                         className="w-full h-full object-contain"
-                        src={`${discipline.localMaterialPath}/video-aula-${padded}.mp4`}
+                        src={`${materialBase}/video-aula-${padded}.mp4`}
                       >
                         Seu navegador não suporta a reprodução de vídeo.
                       </video>
@@ -623,12 +637,12 @@ export const Classroom: React.FC<ClassroomProps> = ({
                           Diagramas conceituais, esquemas e síntese visual dos tópicos da aula.
                         </p>
                         <p className="text-[11px] font-mono text-emerald-800 pt-1">
-                          {discipline.localMaterialPath}/slides-aula-{padded}.pdf
+                          {materialBase}/slides-aula-{padded}.pdf
                         </p>
                       </div>
 
                       <a
-                        href={`${discipline.localMaterialPath}/slides-aula-${padded}.pdf`}
+                        href={`${materialBase}/slides-aula-${padded}.pdf`}
                         target="_blank"
                         rel="noreferrer"
                         download
@@ -650,12 +664,12 @@ export const Classroom: React.FC<ClassroomProps> = ({
                       className="w-full bg-[#006633] hover:bg-[#004d25] text-white font-bold py-3 rounded-xl text-xs transition-colors flex items-center justify-center space-x-2 shadow-xs cursor-pointer"
                     >
                       <CheckCircle2 className="w-4 h-4" />
-                      <span>{isStepCompleted(2) ? 'Etapa 2 Concluída (Revalidar)' : 'Concluir Slides e Desbloquear Material PDF'}</span>
+                      <span>{isStepCompleted(2) ? 'Etapa 2 Concluída (Revalidar)' : 'Concluir Slices e Desbloquear Material PDF'}</span>
                     </button>
                   </div>
                 )}
 
-                {/* ETAPA 3: MATERIAL DIDÁTICO EM PDF (versão dinâmica e limpa) */}
+                {/* ETAPA 3: MATERIAL DIDÁTICO EM PDF */}
                 {activeStepNumber === 3 && (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between border-b border-gray-100 pb-3">
@@ -678,14 +692,14 @@ export const Classroom: React.FC<ClassroomProps> = ({
                             Contém o aprofundamento teórico, tutoriais práticos em Python, referências bibliográficas e exercícios de fixação.
                           </p>
                           <p className="text-[11px] font-mono text-emerald-800 pt-1">
-                            {discipline.localMaterialPath}/apostila-aula-{padded}.pdf
+                            {materialBase}/apostila-aula-{padded}.pdf
                           </p>
                         </div>
                       </div>
 
                       <div className="pt-1">
                         <a
-                          href={`${discipline.localMaterialPath}/apostila-aula-${padded}.pdf`}
+                          href={`${materialBase}/apostila-aula-${padded}.pdf`}
                           target="_blank"
                           rel="noreferrer"
                           download
@@ -715,14 +729,14 @@ export const Classroom: React.FC<ClassroomProps> = ({
                             Coleção de exemplos práticos, códigos comentados e casos de uso reais relacionados ao conteúdo da aula.
                           </p>
                           <p className="text-[11px] font-mono text-emerald-800 pt-1">
-                            {discipline.localMaterialPath}/material-complementar-{padded}.pdf
+                            {materialBase}/material-complementar-{padded}.pdf
                           </p>
                         </div>
                       </div>
 
                       <div className="pt-1">
                         <a
-                          href={`${discipline.localMaterialPath}/material-complementar-${padded}.pdf`}
+                          href={`${materialBase}/material-complementar-${padded}.pdf`}
                           target="_blank"
                           rel="noreferrer"
                           download
@@ -752,14 +766,14 @@ export const Classroom: React.FC<ClassroomProps> = ({
                             Lista de referências recomendadas, artigos e exercícios adicionais para aprofundamento.
                           </p>
                           <p className="text-[11px] font-mono text-emerald-800 pt-1">
-                            {discipline.localMaterialPath}/referencias-exercicios-{padded}.pdf
+                            {materialBase}/referencias-exercicios-{padded}.pdf
                           </p>
                         </div>
                       </div>
 
                       <div className="pt-1">
                         <a
-                          href={`${discipline.localMaterialPath}/referencias-exercicios-${padded}.pdf`}
+                          href={`${materialBase}/referencias-exercicios-${padded}.pdf`}
                           target="_blank"
                           rel="noreferrer"
                           download
