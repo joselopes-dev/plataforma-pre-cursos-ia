@@ -112,11 +112,17 @@ export const Classroom: React.FC<ClassroomProps> = ({
   const currentLesson = lessons.find((l) => l.id === activeLessonId) || lessons[0];
 
   // ============================================================
-  // CORREÇÃO DEFINITIVA: extrai o número da pasta a partir do localMaterialPath
-  // Ex: "/cursos/modulo-1/02-logica" ou "cursos\modulo-1\02-logica" → "02"
+  // CORREÇÃO DEFINITIVA + ROBUSTEZ
+  // Garante que o path sempre comece com "/" e funcione em Windows/Linux
   // ============================================================
-  const normalizePath = (path: string): string =>
-    path.replace(/\\/g, '/').replace(/\/+$/, '');
+  const normalizePath = (path: string): string => {
+    if (!path) return '';
+    const cleaned = path
+      .replace(/\\/g, '/')
+      .replace(/\/+/g, '/')
+      .replace(/^\/+|\/+$/g, '');
+    return cleaned ? `/${cleaned}` : '';
+  };
 
   const getPaddedFromPath = (path: string): string => {
     const folder = normalizePath(path).split('/').filter(Boolean).pop() || '';
@@ -593,7 +599,7 @@ export const Classroom: React.FC<ClassroomProps> = ({
 
                     <div className="aspect-video bg-gray-900 rounded-xl overflow-hidden relative shadow-inner">
                       <video
-                        key={`${materialBase}-${padded}`} // força remount ao trocar de disciplina
+                        key={`${materialBase}-${padded}`}
                         controls
                         className="w-full h-full object-contain"
                         src={`${materialBase}/video-aula-${padded}.mp4`}
@@ -613,7 +619,7 @@ export const Classroom: React.FC<ClassroomProps> = ({
                       className="w-full bg-[#006633] hover:bg-[#004d25] text-white font-bold py-3 rounded-xl text-xs transition-colors flex items-center justify-center space-x-2 shadow-xs cursor-pointer"
                     >
                       <CheckCircle2 className="w-4 h-4" />
-                      <span>{isStepCompleted(1) ? 'Etapa 1 Concluída (Revalidar)' : 'Concluir Introdução e Desbloquear Slides'}</span>
+                      <span>{isStepCompleted(1) ? 'Etapa 1 Concluída (Revalidar)' : 'Concluir Introdução e Desbloquear Snides'}</span>
                     </button>
                   </div>
                 )}
@@ -664,12 +670,12 @@ export const Classroom: React.FC<ClassroomProps> = ({
                       className="w-full bg-[#006633] hover:bg-[#004d25] text-white font-bold py-3 rounded-xl text-xs transition-colors flex items-center justify-center space-x-2 shadow-xs cursor-pointer"
                     >
                       <CheckCircle2 className="w-4 h-4" />
-                      <span>{isStepCompleted(2) ? 'Etapa 2 Concluída (Revalidar)' : 'Concluir Slices e Desbloquear Material PDF'}</span>
+                      <span>{isStepCompleted(2) ? 'Etapa 2 Concluída (Revalidar)' : 'Concluir Slides e Desbloquear Material PDF'}</span>
                     </button>
                   </div>
                 )}
 
-                {/* ETAPA 3: MATERIAL DIDÁTICO EM PDF */}
+                {/* ETAPA 3: MATERIAL DIDÁTICO EM PDF + TXT + README */}
                 {activeStepNumber === 3 && (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between border-b border-gray-100 pb-3">
@@ -790,6 +796,101 @@ export const Classroom: React.FC<ClassroomProps> = ({
                           <li>Referências bibliográficas oficiais</li>
                           <li>Exercícios extras de fixação</li>
                         </ul>
+                      </div>
+                    </div>
+
+                    {/* ===== ARQUIVOS DE TEXTO E README ===== */}
+
+                    {/* TXT 1 - Apostila em texto */}
+                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 space-y-4">
+                      <div className="flex items-start space-x-3">
+                        <FileText className="w-6 h-6 text-[#006633] mt-1 shrink-0" />
+                        <div className="space-y-1">
+                          <h4 className="font-bold text-sm text-gray-900">
+                            Apostila em Formato Texto (Editável)
+                          </h4>
+                          <p className="text-xs text-gray-600 leading-relaxed">
+                            Versão em texto puro da apostila, útil para cópia, busca rápida e edição.
+                          </p>
+                          <p className="text-[11px] font-mono text-emerald-800 pt-1">
+                            {materialBase}/apostila-aula-{padded}.txt
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="pt-1">
+                        <a
+                          href={`${materialBase}/apostila-aula-${padded}.txt`}
+                          target="_blank"
+                          rel="noreferrer"
+                          download
+                          className="inline-flex items-center space-x-2 text-xs bg-white border border-emerald-300 hover:border-[#006633] px-3.5 py-2 rounded-lg text-emerald-800 font-bold transition-all shadow-xs cursor-pointer"
+                        >
+                          <Download className="w-3.5 h-3.5 text-emerald-700" />
+                          <span>Baixar Apostila (.txt)</span>
+                        </a>
+                      </div>
+                    </div>
+
+                    {/* TXT 2 - Material de Estudo Experimental */}
+                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 space-y-4">
+                      <div className="flex items-start space-x-3">
+                        <FileText className="w-6 h-6 text-[#006633] mt-1 shrink-0" />
+                        <div className="space-y-1">
+                          <h4 className="font-bold text-sm text-gray-900">
+                            Material de Estudo Experimental
+                          </h4>
+                          <p className="text-xs text-gray-600 leading-relaxed">
+                            Roteiro prático, exercícios hands-on e orientações experimentais da aula.
+                          </p>
+                          <p className="text-[11px] font-mono text-emerald-800 pt-1">
+                            {materialBase}/material-estudo-experimental{padded === '01' ? '' : padded}.txt
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="pt-1">
+                        <a
+                          href={`${materialBase}/material-estudo-experimental${padded === '01' ? '' : padded}.txt`}
+                          target="_blank"
+                          rel="noreferrer"
+                          download
+                          className="inline-flex items-center space-x-2 text-xs bg-white border border-emerald-300 hover:border-[#006633] px-3.5 py-2 rounded-lg text-emerald-800 font-bold transition-all shadow-xs cursor-pointer"
+                        >
+                          <Download className="w-3.5 h-3.5 text-emerald-700" />
+                          <span>Baixar Material Experimental (.txt)</span>
+                        </a>
+                      </div>
+                    </div>
+
+                    {/* README.md */}
+                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 space-y-4">
+                      <div className="flex items-start space-x-3">
+                        <FileText className="w-6 h-6 text-[#006633] mt-1 shrink-0" />
+                        <div className="space-y-1">
+                          <h4 className="font-bold text-sm text-gray-900">
+                            README da Aula
+                          </h4>
+                          <p className="text-xs text-gray-600 leading-relaxed">
+                            Instruções gerais, pré-requisitos e observações da pasta da aula.
+                          </p>
+                          <p className="text-[11px] font-mono text-emerald-800 pt-1">
+                            {materialBase}/README.md
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="pt-1">
+                        <a
+                          href={`${materialBase}/README.md`}
+                          target="_blank"
+                          rel="noreferrer"
+                          download
+                          className="inline-flex items-center space-x-2 text-xs bg-white border border-emerald-300 hover:border-[#006633] px-3.5 py-2 rounded-lg text-emerald-800 font-bold transition-all shadow-xs cursor-pointer"
+                        >
+                          <Download className="w-3.5 h-3.5 text-emerald-700" />
+                          <span>Baixar README.md</span>
+                        </a>
                       </div>
                     </div>
 
