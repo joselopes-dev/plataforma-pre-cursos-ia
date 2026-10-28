@@ -21,10 +21,33 @@ startxref 0
   return stream;
 }
 
-const ALL = Array.from({length:20}, (_,i)=>({n:String(i+1).padStart(2,'0'), t:`Aula ${String(i+1).padStart(2,'0')}`, dir:`modulo-${Math.ceil((i+1)/5)}/${String(i+1).padStart(2,'0')}-aula`}));
+// ===== MAPA OFICIAL (igual ao DISCIPLINE_FALLBACK do frontend) =====
+const DISCIPLINES = [
+  { code: 'INF-101', dir: 'modulo-1/01-fundamentos', num: '01', title: 'Fundamentos de Informática' },
+  { code: 'LOG-102', dir: 'modulo-1/02-logica', num: '02', title: 'Lógica de Programação' },
+  { code: 'PYTHON-103', dir: 'modulo-1/03-python', num: '03', title: 'Python Básico' },
+  { code: 'BD-104', dir: 'modulo-1/04-banco-dados', num: '04', title: 'Banco de Dados' },
+  { code: 'MAT-105', dir: 'modulo-1/05-matematica-estatistica', num: '05', title: 'Matemática e Estatística' },
+  { code: 'IA-106', dir: 'modulo-1/06-fundamentos-ia', num: '06', title: 'Fundamentos de IA' },
+  { code: 'CD-201', dir: 'modulo-2/07-python-ciencia-dados', num: '07', title: 'Python para Ciência de Dados' },
+  { code: 'MLA-202', dir: 'modulo-2/08-ml-aplicado', num: '08', title: 'Machine Learning Aplicado' },
+  { code: 'DL-203', dir: 'modulo-2/09-deep-learning', num: '09', title: 'Deep Learning' },
+  { code: 'PLN-204', dir: 'modulo-2/10-pln-chatbots', num: '10', title: 'PLN e Chatbots' },
+  { code: 'MET-205', dir: 'modulo-2/11-metodologia', num: '11', title: 'Metodologia Científica' },
+  { code: 'PPS-206', dir: 'modulo-2/12-pratica-supervisionada-1', num: '12', title: 'Prática Supervisionada 1' },
+  { code: 'SEG-301', dir: 'modulo-3/13-seguranca-lgpd', num: '13', title: 'Segurança e LGPD' },
+  { code: 'ES-302', dir: 'modulo-3/14-engenharia-software-ia', num: '14', title: 'Engenharia de Software para IA' },
+  { code: 'MLO-303', dir: 'modulo-3/15-mlops-deploy', num: '15', title: 'MLOps e Deploy' },
+  { code: 'ASS-304', dir: 'modulo-3/16-assistentes-ia', num: '16', title: 'Assistentes de IA' },
+  { code: 'LLM-305', dir: 'modulo-3/17-llms-ia', num: '17', title: 'LLMs e IA Generativa' },
+  { code: 'VIS-306', dir: 'modulo-3/18-visao-computacional', num: '18', title: 'Visão Computacional' },
+  { code: 'GP-307', dir: 'modulo-3/19-gestao-projetos-ia', num: '19', title: 'Gestão de Projetos de IA' },
+  { code: 'PPS-308', dir: 'modulo-3/20-pratica-supervisionada-2', num: '20', title: 'Prática Supervisionada 2' },
+];
 
 export function seedAllCourseMaterials() {
-  console.log('INICIO DO SEED - GERANDO PDF E VIDEO');
+  console.log('INICIO DO SEED - GERANDO PDF E VIDEO (estrutura alinhada com frontend)');
+
   const roots = [
     path.resolve(__dirname, '../public/cursos'),
     path.resolve(__dirname, '../../public/cursos'),
@@ -32,19 +55,38 @@ export function seedAllCourseMaterials() {
     path.resolve(__dirname, '../../dist/public/cursos'),
     path.resolve(__dirname, 'public/cursos'),
   ];
-  console.log('Roots:', roots);
-  for (const root of [...new Set(roots)]) {
-    if (!fs.existsSync(root)) fs.mkdirSync(root, {recursive:true});
-    for (const item of ALL) {
-      const dp = path.join(root, item.dir);
-      fs.mkdirSync(dp, {recursive:true});
-      fs.writeFileSync(path.join(dp, `apostila-aula-${item.n}.pdf`), makePdf(item.t, 'Apostila'));
-      fs.writeFileSync(path.join(dp, `slides-aula-${item.n}.pdf`), makePdf(item.t, 'Slides'));
-      fs.writeFileSync(path.join(dp, `material-complementar-${item.n}.pdf`), makePdf(item.t, 'Complementar'));
-      fs.writeFileSync(path.join(dp, `referencias-exercicios-${item.n}.pdf`), makePdf(item.t, 'Refs'));
-      const vp = path.join(dp, `video-aula-${item.n}.mp4`);
-      if (!fs.existsSync(vp)) fs.writeFileSync(vp, 'FAKE VIDEO PLACEHOLDER - TROCAR POR VIDEO REAL');
+
+  const uniqueRoots = [...new Set(roots)];
+  console.log('Roots:', uniqueRoots);
+
+  for (const root of uniqueRoots) {
+    if (!fs.existsSync(root)) {
+      fs.mkdirSync(root, { recursive: true });
+    }
+
+    for (const d of DISCIPLINES) {
+      const dp = path.join(root, d.dir);
+      fs.mkdirSync(dp, { recursive: true });
+
+      // PDFs
+      fs.writeFileSync(path.join(dp, `apostila-aula-${d.num}.pdf`), makePdf(d.title, 'Apostila'));
+      fs.writeFileSync(path.join(dp, `slides-aula-${d.num}.pdf`), makePdf(d.title, 'Slides'));
+      fs.writeFileSync(path.join(dp, `material-complementar-${d.num}.pdf`), makePdf(d.title, 'Complementar'));
+      fs.writeFileSync(path.join(dp, `referencias-exercicios-${d.num}.pdf`), makePdf(d.title, 'Referências'));
+
+      // README
+      fs.writeFileSync(
+        path.join(dp, 'README.md'),
+        `# ${d.code} - ${d.title}\n\nMaterial da disciplina ${d.code}.\n`
+      );
+
+      // Vídeo placeholder
+      const vp = path.join(dp, `video-aula-${d.num}.mp4`);
+      if (!fs.existsSync(vp)) {
+        fs.writeFileSync(vp, 'FAKE VIDEO PLACEHOLDER - TROCAR POR VIDEO REAL');
+      }
     }
   }
-  console.log('SEED CONCLUIDO COM PDFs E VIDEOS!');
+
+  console.log('SEED CONCLUIDO! 20 disciplinas com estrutura correta.');
 }
