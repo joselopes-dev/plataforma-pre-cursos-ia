@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import express from 'express';
 import { createExpressApp } from './src/server/app.ts';
@@ -22,12 +23,23 @@ async function startServer() {
   const PORT = Number(process.env.PORT) || 3000;
   const isProd = process.env.NODE_ENV === 'production';
 
-  // Servir materiais didáticos (/cursos) estaticamente em desenvolvimento e produção
-  const coursesDir = path.resolve(__dirname, 'public/cursos');
-  app.use('/cursos', express.static(coursesDir));
+  // CORRIGIDO: Servir /cursos de TODOS os lugares possíveis
+  const possibleCursosDirs = [
+    path.resolve(__dirname, 'public/cursos'),
+    path.resolve(__dirname, 'src/public/cursos'),
+    path.resolve(__dirname, 'dist/public/cursos'),
+    path.resolve(__dirname, 'src/dist/public/cursos'),
+    path.resolve(__dirname, '../public/cursos'),
+  ];
+  
+  for (const dir of possibleCursosDirs) {
+    if (fs.existsSync(dir)) {
+      console.log(`[Cursos] Servindo de: ${dir}`);
+      app.use('/cursos', express.static(dir));
+    }
+  }
 
   if (!isProd) {
-    // Em desenvolvimento: Vite SPA middleware mode
     const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
@@ -36,13 +48,14 @@ async function startServer() {
     app.use(vite.middlewares);
     console.log('⚡ [Vite] Middleware de desenvolvimento integrado ao Express.');
   } else {
-    // Em produção (Render.com): serve arquivos construídos de /dist
     const distPath = path.resolve(__dirname, 'dist');
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
-      // Se for uma rota de API não encontrada, responde 404 JSON ao invés da página HTML
       if (req.path.startsWith('/api/')) {
         return res.status(404).json({ error: 'Endpoint da API não encontrado.' });
+      }
+      if (req.path.startsWith('/cursos/')) {
+        return res.status(404).json({ error: 'Material não encontrado.' });
       }
       res.sendFile(path.resolve(distPath, 'index.html'));
     });
@@ -51,7 +64,6 @@ async function startServer() {
 
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`🎓 CAMPOS IA ativa em http://0.0.0.0:${PORT}`);
-    console.log(`🩺 Endpoint de saúde disponível em http://0.0.0.0:${PORT}/api/health`);
   });
 }
 
