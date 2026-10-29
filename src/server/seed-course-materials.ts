@@ -7,7 +7,7 @@ const __dirname = path.dirname(__filename);
 
 function makePdf(titulo: string, tipo: string) {
   const text = `${tipo} - ${titulo}`;
-  const stream = `%PDF-1.4
+  return `%PDF-1.4
 1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj
 2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj
 3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Contents 4 0 R/Resources<</Font<</F1<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>>>>>>endobj
@@ -17,11 +17,15 @@ endstream endobj
 xref 0 5
 trailer<</Size 5/Root 1 0 R>>
 startxref 0
+
+
+
+
+
 %%EOF`;
-  return stream;
 }
 
-// ===== MAPA OFICIAL (igual ao DISCIPLINE_FALLBACK do frontend) =====
+// MAPA OFICIAL (igual ao frontend)
 const DISCIPLINES = [
   { code: 'INF-101', dir: 'modulo-1/01-fundamentos', num: '01', title: 'Fundamentos de Informática' },
   { code: 'LOG-102', dir: 'modulo-1/02-logica', num: '02', title: 'Lógica de Programação' },
@@ -46,7 +50,7 @@ const DISCIPLINES = [
 ];
 
 export function seedAllCourseMaterials() {
-  console.log('INICIO DO SEED - GERANDO PDF E VIDEO (estrutura alinhada com frontend)');
+  console.log('INICIO DO SEED - GERANDO PDF + VIDEO');
 
   const roots = [
     path.resolve(__dirname, '../public/cursos'),
@@ -57,12 +61,9 @@ export function seedAllCourseMaterials() {
   ];
 
   const uniqueRoots = [...new Set(roots)];
-  console.log('Roots:', uniqueRoots);
 
   for (const root of uniqueRoots) {
-    if (!fs.existsSync(root)) {
-      fs.mkdirSync(root, { recursive: true });
-    }
+    if (!fs.existsSync(root)) fs.mkdirSync(root, { recursive: true });
 
     for (const d of DISCIPLINES) {
       const dp = path.join(root, d.dir);
@@ -77,16 +78,14 @@ export function seedAllCourseMaterials() {
       // README
       fs.writeFileSync(
         path.join(dp, 'README.md'),
-        `# ${d.code} - ${d.title}\n\nMaterial da disciplina ${d.code}.\n`
+        `# ${d.code} - ${d.title}\n\nMaterial da disciplina.\n`
       );
 
-      // Vídeo placeholder
-      const vp = path.join(dp, `video-aula-${d.num}.mp4`);
-      if (!fs.existsSync(vp)) {
-        fs.writeFileSync(vp, 'FAKE VIDEO PLACEHOLDER - TROCAR POR VIDEO REAL');
-      }
+      // VÍDEO (sempre cria / sobrescreve)
+      const videoPath = path.join(dp, `video-aula-${d.num}.mp4`);
+      fs.writeFileSync(videoPath, 'FAKE VIDEO PLACEHOLDER - TROCAR POR VIDEO REAL');
     }
   }
 
-  console.log('SEED CONCLUIDO! 20 disciplinas com estrutura correta.');
+  console.log('SEED CONCLUIDO! 20 disciplinas com PDF + VIDEO.');
 }
