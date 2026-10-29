@@ -49,8 +49,8 @@ export function createExpressApp(): Express {
   app.get('/api/v1/system/status', (_req: Request, res: Response) => {
     res.json({
       online: true,
-      stage: 'Etapa 4 — Certificação Digital e Gestão Acadêmica Docente',
-      version: '1.4.0',
+      stage: 'Modo de Produção Oficial — Plataforma Educacional CAMPOS IA (1.000 horas)',
+      version: '2.0.0',
     });
   });
 

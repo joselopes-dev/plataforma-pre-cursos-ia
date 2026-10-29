@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { User } from '../types/index.ts';
+//import { User } from '../types/index.ts';
+import { User, UserRole } from '../types/index.ts';
 import { 
   GraduationCap, 
   Bot, 
@@ -21,6 +22,7 @@ interface HeaderProps {
   openAuditModal: () => void;
   openAuthModal: () => void;
   onLogout: () => void;
+    onSwitchUserRole: (role: UserRole) => void;
   isPostgresConnected: boolean;
 }
 
@@ -31,6 +33,7 @@ export const Header: React.FC<HeaderProps> = ({
   openTutor,
   openAuditModal,
   openAuthModal,
+  onSwitchUserRole,
   onLogout,
   isPostgresConnected,
 }) => {

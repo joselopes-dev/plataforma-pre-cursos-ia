@@ -54,8 +54,8 @@ export const SystemAuditModal: React.FC<SystemAuditModalProps> = ({ isOpen, onCl
               <Server className="w-5 h-5 text-emerald-200" />
             </div>
             <div>
-              <h2 className="text-base font-bold">Diagnóstico do Sistema & Auditoria Render.com</h2>
-              <p className="text-xs text-emerald-200/80">Etapa 1 — Verificação de Infraestrutura e Integridade Curricular</p>
+              <h2 className="text-base font-bold">Diagnóstico Operacional de Produção</h2>
+              <p className="text-xs text-emerald-200/80">Infraestrutura Render.com & Integridade do Banco PostgreSQL</p>
             </div>
           </div>
           <button

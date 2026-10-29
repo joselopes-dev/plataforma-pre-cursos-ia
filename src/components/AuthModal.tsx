@@ -1,18 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { X, ShieldCheck, AlertCircle, Lock, Info, ExternalLink } from 'lucide-react';
-import { User } from '../types/index.ts';
+import { UserRole } from '../types/index.ts';
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onLoginSuccess: (user: User) => void;
+  onLoginSuccess: (user: any) => void;
+  onDevLogin: (role: UserRole) => void;
 }
 
-export const AuthModal: React.FC<AuthModalProps> = ({
-  isOpen,
-  onClose,
-  onLoginSuccess,
-}) => {
+
+export const AuthModal = ({ isOpen, onClose, onLoginSuccess, onDevLogin }: AuthModalProps) => {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [googleClientId, setGoogleClientId] = useState<string>('');

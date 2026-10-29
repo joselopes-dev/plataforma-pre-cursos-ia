@@ -10,13 +10,6 @@
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
-    "test": "tsx tests/curriculum-integrity.test.ts && tsx tests/etapa2-integrations-rag.test.ts && tsx tests/etapa2.5-rag-robustness.test.ts && tsx tests/etapa4-certificates-and-admin.test.ts && tsx tests/etapa5-materials-modules2-3.test.ts && tsx tests/auth-production-real.test.ts",
-    "test:auth": "tsx tests/auth-production-real.test.ts",
-    "test:etapa1": "tsx tests/curriculum-integrity.test.ts",
-    "test:etapa2": "tsx tests/etapa2-integrations-rag.test.ts",
-    "test:etapa2.5": "tsx tests/etapa2.5-rag-robustness.test.ts",
-    "test:etapa4": "tsx tests/etapa4-certificates-and-admin.test.ts",
-    "test:etapa5": "tsx tests/etapa5-materials-modules2-3.test.ts",
     "migrate": "tsx src/db/migrate.ts",
     "seed:materials": "tsx src/server/seed-course-materials.ts"
   },
@@ -39,6 +32,7 @@
     "qrcode": "^1.5.4",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
+    "tsx": "^4.21.0",
     "vite": "^8.3.0"
   },
   "devDependencies": {
@@ -51,7 +45,6 @@
     "autoprefixer": "^10.4.21",
     "esbuild": "^0.28.0",
     "tailwindcss": "^4.3.3",
-    "tsx": "^4.23.15",
     "typescript": "^7.0.2"
   }
 }

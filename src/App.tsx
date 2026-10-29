@@ -86,6 +86,23 @@ export default function App() {
     }
   };
 
+  // Alternância de Perfil (Aluno, Professor, Administrador)
+  const handleSwitchUserRole = async (role: UserRole) => {
+    try {
+      const res = await fetch('/api/v1/auth/dev-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role }),
+      });
+      const data = await res.json();
+      if (data.user) {
+        setUser(data.user);
+        refreshProgress();
+      }
+    } catch (err) {
+      console.error('Erro ao trocar perfil:', err);
+    }
+  };
 
   // Logout
   const handleLogout = async () => {
@@ -97,6 +114,7 @@ export default function App() {
       console.error('Erro ao encerrar sessão:', err);
     }
   };
+  
 
   // Navegação direta para Sala de Aula
   const handleSelectDiscipline = (disciplineId: string) => {
@@ -139,6 +157,7 @@ export default function App() {
         openAuditModal={() => setIsAuditOpen(true)}
         openAuthModal={() => setIsAuthOpen(true)}
         onLogout={handleLogout}
+        onSwitchUserRole={handleSwitchUserRole}
         isPostgresConnected={isPostgresConnected}
       />
 
@@ -239,6 +258,8 @@ export default function App() {
               onBack={() => setActiveTab('catalogo')}
               openTutorWithContext={handleOpenTutorWithContext}
               onProgressUpdated={refreshProgress}
+              onSelectDiscipline={setSelectedDisciplineId}
+              allDisciplines={disciplines}
             />
           ) : (
             <div className="bg-white p-12 rounded-2xl border border-gray-200 text-center space-y-4 max-w-lg mx-auto my-12">
@@ -309,7 +330,7 @@ export default function App() {
               onClick={() => setIsAuditOpen(true)}
               className="text-[#006633] font-bold hover:underline cursor-pointer"
             >
-              Auditoria Operacional & Render
+              Status do Sistema & Infraestrutura
             </button>
             <span>•</span>
             <span>Língua Portuguesa (Brasil)</span>
@@ -332,13 +353,17 @@ export default function App() {
         onClose={() => setIsAuditOpen(false)}
       />
 
-      {/* Modal de Autenticação Real com Google */}
+      {/* Modal de Autenticação Google & Perfis */}
       <AuthModal
         isOpen={isAuthOpen}
         onClose={() => setIsAuthOpen(false)}
         onLoginSuccess={(loggedUser) => {
           setUser(loggedUser);
           refreshProgress();
+        }}
+        onDevLogin={(role) => {
+          handleSwitchUserRole(role);
+          setIsAuthOpen(false);
         }}
       />
     </div>

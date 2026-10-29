@@ -149,3 +149,22 @@ export interface DisciplineApproval {
   approvedAt: string;
 }
 
+export interface DisciplineFile {
+  name: string;
+  url: string;
+  size: number;
+  formattedSize: string;
+  type: 'pdf' | 'text' | 'markdown';
+  label: string;
+  description: string;
+}
+
+export interface DisciplineFileContent {
+  filename: string;
+  url: string;
+  type: 'pdf' | 'text' | 'markdown';
+  content?: string;
+  linesCount?: number;
+  charactersCount?: number;
+}
+
