@@ -88,7 +88,7 @@ export const ALL_DISCIPLINES_MATERIALS = [
   // =========================================================================
   {
     dir: 'modulo-1/01-fundamentos',
-    pdfName: 'apostila-fundamentos-sistemas-linux.pdf',
+    pdfName: 'apostila-aula-01.pdf',
     title: 'INF-101: Fundamentos de Informatica e Linux CLI',
     pages: [
       {
