@@ -1,11 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  Discipline, 
-  Lesson, 
-  User, 
-  FinalExamQuestion, 
-  DisciplineFile 
-} from '../types/index.ts';
+import React, { useState, useEffect } from 'react';
+import { Discipline, Lesson, LessonStep, User, FinalExamQuestion } from '../types/index.ts';
 import { 
   ArrowLeft, 
   Video, 
@@ -19,24 +13,10 @@ import {
   Play, 
   Bot, 
   Download, 
-  ChevronDown, 
+  ChevronRight, 
   HelpCircle,
   Award,
-  FileCheck,
-  Eye,
-  BookOpen,
-  ExternalLink,
-  X,
-  Search,
-  Copy,
-  Check,
-  FolderOpen,
-  FileCode,
-  Sparkles,
-  Layers,
-  Compass,
-  File,
-  RotateCcw
+  FileCheck
 } from 'lucide-react';
 
 interface ClassroomProps {
@@ -45,27 +25,16 @@ interface ClassroomProps {
   onBack: () => void;
   openTutorWithContext: (disciplineId: string, lessonId: string) => void;
   onProgressUpdated: () => void;
-  onSelectDiscipline?: (disciplineId: string) => void;
-  allDisciplines?: Discipline[];
 }
 
 export const Classroom: React.FC<ClassroomProps> = ({
-  disciplineId: initialDisciplineId,
+  disciplineId,
   user,
   onBack,
   openTutorWithContext,
   onProgressUpdated,
-  onSelectDiscipline,
-  allDisciplines = [],
 }) => {
-  // Disciplina ativa na sala de aula
-  const [currentDisciplineId, setCurrentDisciplineId] = useState<string>(initialDisciplineId);
-  const [disciplinesList, setDisciplinesList] = useState<Discipline[]>(allDisciplines);
-  const [isDisciplineDropdownOpen, setIsDisciplineDropdownOpen] = useState<boolean>(false);
-  const [moduleFilter, setModuleFilter] = useState<number | 'all'>('all');
-
-  // Dados da disciplina atual
-  const [disciplineData, setDisciplineData] = useState<{ discipline: Discipline; lessons: Lesson[]; module?: any } | null>(null);
+  const [disciplineData, setDisciplineData] = useState<{ discipline: Discipline; lessons: Lesson[] } | null>(null);
   const [activeLessonId, setActiveLessonId] = useState<string>('');
   const [activeStepNumber, setActiveStepNumber] = useState<number>(1);
   const [progressMap, setProgressMap] = useState<Record<string, boolean>>({});
@@ -73,24 +42,9 @@ export const Classroom: React.FC<ClassroomProps> = ({
   const [actionLoading, setActionLoading] = useState<boolean>(false);
   const [feedbackMessage, setFeedbackMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
 
-  // Arquivos individuais da disciplina atual
-  const [disciplineFiles, setDisciplineFiles] = useState<DisciplineFile[]>([]);
-  const [filesLoading, setFilesLoading] = useState<boolean>(false);
-  const [filesFilter, setFilesFilter] = useState<'all' | 'pdf' | 'text' | 'markdown'>('all');
-
-  // Visualizador / Leitor de Documentos Integrado (Modal)
-  const [isReaderOpen, setIsReaderOpen] = useState<boolean>(false);
-  const [readerFile, setReaderFile] = useState<DisciplineFile | null>(null);
-  const [readerContent, setReaderContent] = useState<string | null>(null);
-  const [contentLoading, setContentLoading] = useState<boolean>(false);
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [hasCopied, setHasCopied] = useState<boolean>(false);
-
-  // Estado do Teste de Fixação (Etapa 4 - 3 questões dinâmicas por aula)
-  const [quizQuestions, setQuizQuestions] = useState<Array<{ question: string; options: string[] }>>([]);
+  // Estado do Teste de Fixação (Aula - 3 questões)
   const [quizAnswers, setQuizAnswers] = useState<Record<number, number>>({ 0: -1, 1: -1, 2: -1 });
   const [quizResult, setQuizResult] = useState<{ score: number; passed: boolean; feedback: string; explanation: string } | null>(null);
-  const [quizLoading, setQuizLoading] = useState<boolean>(false);
 
   // Estado da Avaliação Final da Disciplina (10 questões)
   const [isFinalExamActive, setIsFinalExamActive] = useState<boolean>(false);
@@ -100,208 +54,67 @@ export const Classroom: React.FC<ClassroomProps> = ({
   const [isDisciplineApproved, setIsDisciplineApproved] = useState<boolean>(false);
   const [finalGrade, setFinalGrade] = useState<number | null>(null);
 
-  // Sincroniza quando a prop externa mudar
+  // Carrega dados da disciplina e lições
   useEffect(() => {
-    if (initialDisciplineId && initialDisciplineId !== currentDisciplineId) {
-      setCurrentDisciplineId(initialDisciplineId);
-    }
-  }, [initialDisciplineId]);
-
-  // Carrega lista geral de disciplinas se não fornecida
-  useEffect(() => {
-    if (disciplinesList.length === 0) {
-      fetch('/api/v1/curriculum/disciplines')
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.disciplines) setDisciplinesList(data.disciplines);
-        })
-        .catch((err) => console.error('Erro ao carregar lista de disciplinas:', err));
-    }
-  }, [disciplinesList.length]);
-
-  // 1. Carrega dados da disciplina ativa e lições
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadDiscipline() {
+    async function loadData() {
       try {
         setLoading(true);
-        setFeedbackMessage(null);
-        setIsFinalExamActive(false);
-        setFinalExamResult(null);
-        setQuizResult(null);
-        setQuizAnswers({ 0: -1, 1: -1, 2: -1 });
-
-        // 1.1 Dados da disciplina
-        const res = await fetch(`/api/v1/curriculum/disciplines/${currentDisciplineId}`);
+        const res = await fetch(`/api/v1/curriculum/disciplines/${disciplineId}`);
         const data = await res.json();
-
-        if (!isMounted) return;
         setDisciplineData(data);
 
         if (data.lessons && data.lessons.length > 0) {
           setActiveLessonId(data.lessons[0].id);
-          setActiveStepNumber(1);
         }
 
-        // 1.2 Progresso do usuário
+        // Carrega progresso do usuário
         const progRes = await fetch('/api/v1/progress');
         const progData = await progRes.json();
-
-        if (!isMounted) return;
 
         const map: Record<string, boolean> = {};
         if (progData.rawProgress) {
           progData.rawProgress.forEach((p: any) => {
-            if (p.disciplineId === currentDisciplineId && p.completed) {
+            if (p.disciplineId === disciplineId && p.completed) {
               map[`${p.lessonId}:${p.stepNumber}`] = true;
             }
           });
         }
         setProgressMap(map);
 
-        // Verifica aprovação final
-        const approval = progData.approvals?.find((a: any) => a.disciplineId === currentDisciplineId && a.approved);
+        // Verifica se a disciplina já possui aprovação na Avaliação Final
+        const approval = progData.approvals?.find((a: any) => a.disciplineId === disciplineId && a.approved);
         if (approval) {
           setIsDisciplineApproved(true);
           setFinalGrade(approval.finalGrade);
-        } else {
-          setIsDisciplineApproved(false);
-          setFinalGrade(null);
         }
-
-        // 1.3 Carrega arquivos individuais físicos da disciplina
-        loadDisciplineFiles(currentDisciplineId);
       } catch (err) {
         console.error('Erro ao carregar dados da disciplina:', err);
       } finally {
-        if (isMounted) setLoading(false);
+        setLoading(false);
       }
     }
 
-    loadDiscipline();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [currentDisciplineId]);
-
-  // 2. Carrega lista de arquivos físicos individuais da disciplina
-  const loadDisciplineFiles = async (discId: string) => {
-    try {
-      setFilesLoading(true);
-      const res = await fetch(`/api/v1/curriculum/disciplines/${discId}/files`);
-      if (res.ok) {
-        const data = await res.json();
-        setDisciplineFiles(data.files || []);
-      }
-    } catch (err) {
-      console.error('Erro ao carregar arquivos da disciplina:', err);
-    } finally {
-      setFilesLoading(false);
-    }
-  };
-
-  // 3. Carrega questões dinâmicas do teste de fixação para a aula atual
-  useEffect(() => {
-    if (!currentDisciplineId || !activeLessonId) return;
-
-    let isMounted = true;
-    async function loadQuiz() {
-      try {
-        setQuizLoading(true);
-        const res = await fetch(`/api/v1/curriculum/disciplines/${currentDisciplineId}/lessons/${activeLessonId}/quiz`);
-        if (res.ok) {
-          const data = await res.json();
-          if (isMounted && data.questions) {
-            setQuizQuestions(data.questions);
-            setQuizAnswers({ 0: -1, 1: -1, 2: -1 });
-            setQuizResult(null);
-          }
-        }
-      } catch (err) {
-        console.error('Erro ao carregar teste da aula:', err);
-      } finally {
-        if (isMounted) setQuizLoading(false);
-      }
-    }
-
-    loadQuiz();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [currentDisciplineId, activeLessonId]);
-
-  // Abre leitor de arquivos no modal integrado
-  const handleOpenFile = async (file: DisciplineFile) => {
-    setReaderFile(file);
-    setIsReaderOpen(true);
-    setSearchQuery('');
-    setHasCopied(false);
-
-    if (file.type === 'pdf') {
-      setReaderContent(null);
-      setContentLoading(false);
-      return;
-    }
-
-    // Se for texto ou markdown, carrega o conteúdo via API
-    try {
-      setContentLoading(true);
-      const res = await fetch(
-        `/api/v1/curriculum/disciplines/${currentDisciplineId}/file-content?filename=${encodeURIComponent(file.name)}`
-      );
-      if (res.ok) {
-        const data = await res.json();
-        setReaderContent(data.content || 'Arquivo vazio.');
-      } else {
-        setReaderContent('Não foi possível ler o conteúdo do arquivo.');
-      }
-    } catch (err: any) {
-      setReaderContent('Erro ao carregar conteúdo: ' + err.message);
-    } finally {
-      setContentLoading(false);
-    }
-  };
-
-  // Copia conteúdo de texto para a área de transferência
-  const handleCopyText = () => {
-    if (!readerContent) return;
-    navigator.clipboard.writeText(readerContent);
-    setHasCopied(true);
-    setTimeout(() => setHasCopied(false), 2500);
-  };
-
-  // Alterna a disciplina selecionada diretamente na sala
-  const handleSwitchDiscipline = (newDisciplineId: string) => {
-    setCurrentDisciplineId(newDisciplineId);
-    setIsDisciplineDropdownOpen(false);
-    if (onSelectDiscipline) {
-      onSelectDiscipline(newDisciplineId);
-    }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+    loadData();
+  }, [disciplineId]);
 
   if (loading || !disciplineData) {
     return (
-      <div className="flex items-center justify-center min-h-[460px]">
+      <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center space-y-3">
           <div className="w-10 h-10 border-4 border-[#006633] border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-sm font-semibold text-gray-700">Carregando ambiente da sala de aula e acervo didático...</p>
-          <p className="text-xs text-gray-400">Verificando arquivos PDF, textos e progresso acadêmico</p>
+          <p className="text-sm font-semibold text-gray-600">Carregando ambiente da sala de aula...</p>
         </div>
       </div>
     );
   }
 
-  const { discipline, lessons, module } = disciplineData;
+  const { discipline, lessons } = disciplineData;
   const currentLesson = lessons.find((l) => l.id === activeLessonId) || lessons[0];
 
-  // Verifica se todas as aulas da disciplina foram concluídas
+  // Verifica se todas as aulas da disciplina foram concluídas para liberar a Avaliação Final de 10 Questões
   const areAllLessonsCompleted = lessons.every((l) => Boolean(progressMap[`${l.id}:5`]));
 
-  // Helper para verificar desbloqueio de passos
+  // Helper para verificar se um passo está liberado
   const isStepUnlocked = (stepNum: number) => {
     if (stepNum === 1) return true;
     return Boolean(progressMap[`${currentLesson.id}:${stepNum - 1}`]);
@@ -360,7 +173,7 @@ export const Classroom: React.FC<ClassroomProps> = ({
 
       const answersArray = [quizAnswers[0], quizAnswers[1], quizAnswers[2]];
       if (answersArray.some((a) => a === -1)) {
-        setFeedbackMessage({ type: 'error', text: 'Por favor, responda a todas as 3 questões antes de submeter.' });
+        setFeedbackMessage({ type: 'error', text: 'Por favor, responda a todas as 3 questões antes de enviar.' });
         setActionLoading(false);
         return;
       }
@@ -396,7 +209,7 @@ export const Classroom: React.FC<ClassroomProps> = ({
     }
   };
 
-  // Abrir Avaliação Final de 10 Questões
+  // Abrir Avaliação Final de 10 Questões do Componente
   const handleOpenFinalExam = async () => {
     try {
       setActionLoading(true);
@@ -465,215 +278,54 @@ export const Classroom: React.FC<ClassroomProps> = ({
     }
   };
 
-  // Filtra arquivos da disciplina por tipo
-  const filteredFiles = disciplineFiles.filter((f) => {
-    if (filesFilter === 'all') return true;
-    return f.type === filesFilter;
-  });
-
-  // Arquivos específicos para uso rápido nos passos da aula
-  const slidesFile = disciplineFiles.find((f) => f.name === 'slides-aula-01.pdf') || {
-    name: 'slides-aula-01.pdf',
-    url: `${discipline.localMaterialPath}/slides-aula-01.pdf`,
-    size: 50000,
-    formattedSize: '50 KB',
-    type: 'pdf' as const,
-    label: 'Slides de Apresentação (Aula 01)',
-    description: 'Lâminas conceituais da aula.',
-  };
-
-  const apostilaAulaPdfFile = disciplineFiles.find((f) => f.name === 'apostila-aula-01.pdf') || {
-    name: 'apostila-aula-01.pdf',
-    url: `${discipline.localMaterialPath}/apostila-aula-01.pdf`,
-    size: 80000,
-    formattedSize: '80 KB',
-    type: 'pdf' as const,
-    label: 'Apostila da Aula 01 (PDF)',
-    description: 'Texto didático completo da primeira aula.',
-  };
-
-  const completeBookPdfFile = disciplineFiles.find((f) => f.name.startsWith('apostila-') && f.name.endsWith('.pdf') && f.name !== 'apostila-aula-01.pdf');
-  const apostilaTxtFile = disciplineFiles.find((f) => f.name === 'apostila-aula-01.txt');
-  const officialStudyTxtFile = disciplineFiles.find((f) => f.name === 'material-estudo.txt') || disciplineFiles.find((f) => f.name === 'material-estudo-experimental.txt');
-
   return (
     <div className="space-y-6 pb-12">
-      {/* ============================================================== */}
-      {/* 1. BARRA SUPERIOR: NAVEGAÇÃO, SELETOR DE DISCIPLINAS E MÓDULOS */}
-      {/* ============================================================== */}
-      <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs space-y-4">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          {/* Lado Esquerdo: Voltar + Identificação da Disciplina */}
-          <div className="flex items-start sm:items-center space-x-3">
-            <button
-              onClick={onBack}
-              className="p-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors cursor-pointer shrink-0"
-              title="Voltar ao catálogo de disciplinas"
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </button>
-
-            <div className="space-y-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="bg-emerald-100 text-[#006633] text-xs font-black px-2.5 py-0.5 rounded uppercase tracking-wider">
-                  {discipline.code}
+      {/* Barra Superior da Sala */}
+      <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={onBack}
+            className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors cursor-pointer"
+            title="Voltar ao catálogo"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </button>
+          <div>
+            <div className="flex items-center space-x-2">
+              <span className="bg-emerald-100 text-[#006633] text-xs font-black px-2 py-0.5 rounded uppercase">
+                {discipline.code}
+              </span>
+              <span className="text-xs font-semibold text-gray-500">Módulo {discipline.moduleId} • {discipline.hours}h</span>
+              {isDisciplineApproved && (
+                <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-0.5 rounded flex items-center space-x-1">
+                  <CheckCircle2 className="w-3 h-3" />
+                  <span>Aprovado no Componente (Nota: {finalGrade?.toFixed(1)})</span>
                 </span>
-                <span className="text-xs font-bold text-gray-600 bg-gray-100 px-2 py-0.5 rounded">
-                  Módulo {discipline.moduleId} • {discipline.hours} horas
-                </span>
-                {isDisciplineApproved && (
-                  <span className="bg-emerald-100 text-emerald-900 border border-emerald-300 text-xs font-bold px-2 py-0.5 rounded flex items-center space-x-1">
-                    <CheckCircle2 className="w-3 h-3 text-[#006633]" />
-                    <span>Aprovado(a) • Nota {finalGrade?.toFixed(1)}/10,0</span>
-                  </span>
-                )}
-              </div>
-
-              <h1 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">
-                {discipline.title}
-              </h1>
-            </div>
-          </div>
-
-          {/* Lado Direito: Ações Rápidas (Seletor de Disciplina e Tutor IA) */}
-          <div className="flex flex-wrap items-center gap-2 self-start lg:self-auto">
-            {/* Botão Seletor de Disciplinas */}
-            <div className="relative">
-              <button
-                onClick={() => setIsDisciplineDropdownOpen(!isDisciplineDropdownOpen)}
-                className="bg-gray-50 hover:bg-gray-100 text-gray-800 border border-gray-300 font-bold px-3.5 py-2 rounded-xl text-xs flex items-center space-x-2 transition-colors cursor-pointer"
-              >
-                <Compass className="w-3.5 h-3.5 text-[#006633]" />
-                <span>Trocar Disciplina (20 Componentes)</span>
-                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isDisciplineDropdownOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              {/* Menu Flutuante de Seleção de Todas as 20 Disciplinas e 3 Módulos */}
-              {isDisciplineDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white border border-gray-200 rounded-2xl shadow-xl z-40 p-3 space-y-2 max-h-[460px] overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
-                  <div className="flex items-center justify-between border-b border-gray-100 pb-2 px-1">
-                    <span className="text-xs font-black text-gray-800 uppercase tracking-wider">
-                      Matriz Completa (1.000h)
-                    </span>
-                    <button
-                      onClick={() => setIsDisciplineDropdownOpen(false)}
-                      className="text-gray-400 hover:text-gray-600 p-1"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-
-                  {/* Filtro por Módulo */}
-                  <div className="flex items-center space-x-1 p-1 bg-gray-100 rounded-lg text-[11px]">
-                    <button
-                      onClick={() => setModuleFilter('all')}
-                      className={`flex-1 py-1 text-center font-bold rounded-md transition-colors ${
-                        moduleFilter === 'all' ? 'bg-white shadow-xs text-gray-900' : 'text-gray-600 hover:text-gray-900'
-                      }`}
-                    >
-                      Todos
-                    </button>
-                    <button
-                      onClick={() => setModuleFilter(1)}
-                      className={`flex-1 py-1 text-center font-bold rounded-md transition-colors ${
-                        moduleFilter === 1 ? 'bg-white shadow-xs text-[#006633]' : 'text-gray-600 hover:text-gray-900'
-                      }`}
-                    >
-                      Mod. 1 (6)
-                    </button>
-                    <button
-                      onClick={() => setModuleFilter(2)}
-                      className={`flex-1 py-1 text-center font-bold rounded-md transition-colors ${
-                        moduleFilter === 2 ? 'bg-white shadow-xs text-[#006633]' : 'text-gray-600 hover:text-gray-900'
-                      }`}
-                    >
-                      Mod. 2 (6)
-                    </button>
-                    <button
-                      onClick={() => setModuleFilter(3)}
-                      className={`flex-1 py-1 text-center font-bold rounded-md transition-colors ${
-                        moduleFilter === 3 ? 'bg-white shadow-xs text-[#006633]' : 'text-gray-600 hover:text-gray-900'
-                      }`}
-                    >
-                      Mod. 3 (8)
-                    </button>
-                  </div>
-
-                  {/* Lista de Disciplinas */}
-                  <div className="space-y-1 pt-1">
-                    {disciplinesList
-                      .filter((d) => moduleFilter === 'all' || d.moduleId === moduleFilter)
-                      .map((d) => {
-                        const isCurrent = d.id === currentDisciplineId;
-                        return (
-                          <button
-                            key={d.id}
-                            onClick={() => handleSwitchDiscipline(d.id)}
-                            className={`w-full text-left p-2.5 rounded-xl border text-xs flex items-center justify-between transition-colors cursor-pointer ${
-                              isCurrent
-                                ? 'border-[#006633] bg-emerald-50 text-[#006633] font-bold shadow-xs'
-                                : 'border-gray-100 hover:border-emerald-200 hover:bg-gray-50 text-gray-700'
-                            }`}
-                          >
-                            <div className="space-y-0.5 truncate pr-2">
-                              <div className="flex items-center space-x-1.5">
-                                <span className="font-mono text-[10px] bg-gray-200 text-gray-800 px-1.5 py-0.2 rounded font-bold">
-                                  {d.code}
-                                </span>
-                                <span className="text-[10px] text-gray-500">Módulo {d.moduleId}</span>
-                              </div>
-                              <p className="truncate font-semibold text-gray-900">{d.title}</p>
-                            </div>
-                            <span className="text-[10px] font-mono shrink-0 text-gray-500 font-bold">{d.hours}h</span>
-                          </button>
-                        );
-                      })}
-                  </div>
-                </div>
               )}
             </div>
-
-            {/* Botão Tutor IA */}
-            <button
-              onClick={() => openTutorWithContext(discipline.id, currentLesson.id)}
-              className="bg-emerald-50 hover:bg-emerald-100 text-[#006633] border border-emerald-300 font-bold px-3.5 py-2 rounded-xl text-xs flex items-center space-x-2 cursor-pointer shadow-xs"
-            >
-              <Bot className="w-4 h-4" />
-              <span>Tirar Dúvida Desta Aula</span>
-            </button>
+            <h1 className="text-xl font-bold text-gray-900 mt-0.5">{discipline.title}</h1>
           </div>
         </div>
 
-        {/* Resumo da ementa e competências */}
-        <div className="pt-2 border-t border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs text-gray-600">
-          <p className="line-clamp-2 md:line-clamp-1 max-w-4xl text-gray-700">
-            <strong>Ementa:</strong> {discipline.summary}
-          </p>
-          <div className="shrink-0 flex items-center space-x-2 text-[11px] font-mono text-emerald-800">
-            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-            <span>{disciplineFiles.length} arquivos disponíveis nesta disciplina</span>
-          </div>
-        </div>
+        <button
+          onClick={() => openTutorWithContext(discipline.id, currentLesson.id)}
+          className="bg-emerald-50 hover:bg-emerald-100 text-[#006633] border border-emerald-300 font-bold px-3.5 py-2 rounded-lg text-xs flex items-center space-x-2 self-start md:self-auto cursor-pointer"
+        >
+          <Bot className="w-4 h-4" />
+          <span>Tirar Dúvida Desta Aula</span>
+        </button>
       </div>
 
-      {/* ============================================================== */}
-      {/* 2. GRID PRINCIPAL: SIDEBAR DE AULAS + CONTEÚDO ATIVO */}
-      {/* ============================================================== */}
+      {/* Grid Principal */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* ============================================================== */}
-        {/* COLUNA ESQUERDA: LISTA DE AULAS + AVALIAÇÃO FINAL + ACERVO */}
-        {/* ============================================================== */}
+        {/* Coluna Esquerda: Aulas e Avaliação Final */}
         <div className="lg:col-span-1 space-y-4">
-          {/* Aulas da Disciplina */}
-          <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs space-y-2">
-            <div className="flex items-center justify-between pb-1">
-              <h2 className="text-xs font-black text-gray-500 uppercase tracking-wider">
-                Aulas da Disciplina ({lessons.length})
-              </h2>
-              <span className="text-[10px] text-gray-400 font-mono">5 etapas/aula</span>
-            </div>
+          <div>
+            <h2 className="text-xs font-extrabold text-gray-400 uppercase tracking-wider px-1 mb-2">
+              Aulas da Disciplina ({lessons.length})
+            </h2>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               {lessons.map((lesson, idx) => {
                 const isSelected = !isFinalExamActive && lesson.id === currentLesson.id;
                 const isPreviousLessonFinished = idx === 0 || Boolean(progressMap[`${lessons[idx - 1].id}:5`]);
@@ -689,24 +341,24 @@ export const Classroom: React.FC<ClassroomProps> = ({
                       setActiveStepNumber(1);
                       setFeedbackMessage(null);
                     }}
-                    className={`w-full text-left p-3 rounded-xl border transition-all text-xs flex items-start justify-between gap-2 cursor-pointer ${
+                    className={`w-full text-left p-3.5 rounded-xl border transition-all text-xs flex items-start justify-between gap-2 cursor-pointer ${
                       isSelected
-                        ? 'border-[#006633] bg-emerald-50/60 shadow-xs ring-2 ring-[#006633]/20'
+                        ? 'border-[#006633] bg-emerald-50/50 shadow-xs ring-1 ring-[#006633]'
                         : isPreviousLessonFinished
                         ? 'border-gray-200 bg-white hover:border-emerald-300'
                         : 'border-gray-100 bg-gray-50/70 opacity-60 cursor-not-allowed'
                     }`}
                   >
-                    <div className="space-y-0.5 truncate pr-1">
-                      <span className="font-bold text-gray-900 block truncate">{lesson.title}</span>
-                      <p className="text-[11px] text-gray-500 truncate">{lesson.summary}</p>
+                    <div className="space-y-1">
+                      <span className="font-bold text-gray-900 line-clamp-1">{lesson.title}</span>
+                      <p className="text-[11px] text-gray-500 line-clamp-1">{lesson.summary}</p>
                     </div>
 
                     <div className="shrink-0 mt-0.5">
                       {isLessonFullyCompleted ? (
                         <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                       ) : isPreviousLessonFinished ? (
-                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+                        <span className="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>
                       ) : (
                         <Lock className="w-3.5 h-3.5 text-gray-400" />
                       )}
@@ -717,22 +369,22 @@ export const Classroom: React.FC<ClassroomProps> = ({
             </div>
           </div>
 
-          {/* Cartão de Avaliação Final da Disciplina (10 Questões) */}
-          <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs space-y-2">
-            <h2 className="text-xs font-black text-gray-500 uppercase tracking-wider">
-              Conclusão da Disciplina
+          {/* Cartão de Avaliação Final do Componente (10 Questões - Obrigatória) */}
+          <div className="pt-2 border-t border-gray-200">
+            <h2 className="text-xs font-extrabold text-gray-400 uppercase tracking-wider px-1 mb-2">
+              Conclusão do Componente
             </h2>
 
             <button
               disabled={!areAllLessonsCompleted}
               onClick={handleOpenFinalExam}
-              className={`w-full text-left p-3.5 rounded-xl border transition-all text-xs space-y-2 cursor-pointer ${
+              className={`w-full text-left p-4 rounded-xl border transition-all text-xs space-y-2 cursor-pointer ${
                 isFinalExamActive
                   ? 'border-[#006633] bg-emerald-100/60 ring-2 ring-[#006633]'
                   : isDisciplineApproved
                   ? 'border-emerald-300 bg-emerald-50 hover:bg-emerald-100'
                   : areAllLessonsCompleted
-                  ? 'border-amber-300 bg-amber-50 hover:bg-amber-100 shadow-xs'
+                  ? 'border-amber-300 bg-amber-50 hover:bg-amber-100'
                   : 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'
               }`}
             >
@@ -749,152 +401,32 @@ export const Classroom: React.FC<ClassroomProps> = ({
                   <Lock className="w-3.5 h-3.5 text-gray-400" />
                 )}
               </div>
-              <p className="text-[11px] text-gray-600 leading-tight">
+              <p className="text-[11px] text-gray-600">
                 {isDisciplineApproved
-                  ? `Componente concluído com nota ${finalGrade?.toFixed(1)}/10,0.`
+                  ? `Componente aprovado com nota ${finalGrade?.toFixed(1)}/10,0.`
                   : areAllLessonsCompleted
-                  ? 'Todas as aulas concluídas! Realize a avaliação final de 10 questões para homologar sua aprovação.'
-                  : 'Exige conclusão integral das etapas de cada aula desta disciplina.'}
+                  ? 'Todas as aulas concluídas! Realize a avaliação final para aprovação formal no componente.'
+                  : 'Bloqueada: Exige conclusão integral das 5 etapas de cada aula.'}
               </p>
             </button>
           </div>
 
-          {/* ACERVO DE ARQUIVOS INDIVIDUAIS DA DISCIPLINA (FÍSICOS) */}
-          <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs space-y-3">
-            <div className="flex items-center justify-between pb-1 border-b border-gray-100">
-              <div className="flex items-center space-x-1.5">
-                <FolderOpen className="w-4 h-4 text-[#006633]" />
-                <h3 className="text-xs font-black text-gray-800 uppercase tracking-wider">
-                  Arquivos da Disciplina
-                </h3>
-              </div>
-              <span className="text-[10px] bg-emerald-100 text-[#006633] font-bold px-1.5 py-0.5 rounded">
-                {disciplineFiles.length} arquivos
-              </span>
-            </div>
-
-            <p className="text-[11px] text-gray-500 leading-tight">
-              Clique em qualquer arquivo para abrir no leitor integrado ou baixar para estudo local.
-            </p>
-
-            {/* Filtros rápidos dos arquivos */}
-            <div className="flex items-center space-x-1 text-[10px] font-bold">
-              <button
-                onClick={() => setFilesFilter('all')}
-                className={`px-2 py-0.5 rounded ${filesFilter === 'all' ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-              >
-                Todos
-              </button>
-              <button
-                onClick={() => setFilesFilter('pdf')}
-                className={`px-2 py-0.5 rounded ${filesFilter === 'pdf' ? 'bg-red-700 text-white' : 'bg-red-50 text-red-700 hover:bg-red-100'}`}
-              >
-                PDFs
-              </button>
-              <button
-                onClick={() => setFilesFilter('text')}
-                className={`px-2 py-0.5 rounded ${filesFilter === 'text' ? 'bg-blue-700 text-white' : 'bg-blue-50 text-blue-700 hover:bg-blue-100'}`}
-              >
-                Textos
-              </button>
-              <button
-                onClick={() => setFilesFilter('markdown')}
-                className={`px-2 py-0.5 rounded ${filesFilter === 'markdown' ? 'bg-purple-700 text-white' : 'bg-purple-50 text-purple-700 hover:bg-purple-100'}`}
-              >
-                README
-              </button>
-            </div>
-
-            {/* Lista dos arquivos individuais */}
-            {filesLoading ? (
-              <div className="py-4 text-center text-xs text-gray-500 animate-pulse">
-                Carregando arquivos da disciplina...
-              </div>
-            ) : filteredFiles.length === 0 ? (
-              <div className="py-3 text-center text-xs text-gray-400">
-                Nenhum arquivo encontrado com este filtro.
-              </div>
-            ) : (
-              <div className="space-y-2 max-h-[360px] overflow-y-auto pr-1">
-                {filteredFiles.map((file) => {
-                  const isPdf = file.type === 'pdf';
-                  const isText = file.type === 'text';
-                  const isMd = file.type === 'markdown';
-
-                  return (
-                    <div
-                      key={file.name}
-                      className="p-2.5 rounded-xl border border-gray-200 bg-gray-50/50 hover:bg-white hover:border-emerald-300 transition-all text-xs space-y-1.5"
-                    >
-                      <div className="flex items-start justify-between gap-1.5">
-                        <div className="flex items-start space-x-2 truncate">
-                          {isPdf ? (
-                            <FileText className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
-                          ) : isMd ? (
-                            <FileCode className="w-4 h-4 text-purple-600 shrink-0 mt-0.5" />
-                          ) : (
-                            <File className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-                          )}
-                          <div className="truncate">
-                            <span className="font-bold text-gray-900 block truncate" title={file.label}>
-                              {file.label}
-                            </span>
-                            <span className="font-mono text-[10px] text-gray-500 block truncate">
-                              {file.name} • {file.formattedSize}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <p className="text-[11px] text-gray-600 line-clamp-1">{file.description}</p>
-
-                      <div className="pt-1 flex items-center space-x-1.5">
-                        <button
-                          onClick={() => handleOpenFile(file)}
-                          className="flex-1 bg-white hover:bg-emerald-50 border border-emerald-300 hover:border-[#006633] text-[#006633] font-bold py-1 px-2 rounded-lg text-[11px] flex items-center justify-center space-x-1 transition-colors cursor-pointer"
-                        >
-                          <Eye className="w-3 h-3" />
-                          <span>Abrir</span>
-                        </button>
-
-                        <a
-                          href={file.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          title="Abrir em Nova Aba"
-                          className="p-1 rounded-lg border border-gray-200 hover:bg-gray-100 text-gray-600 transition-colors"
-                        >
-                          <ExternalLink className="w-3 h-3" />
-                        </a>
-
-                        <a
-                          href={file.url}
-                          download
-                          title="Baixar Arquivo"
-                          className="p-1 rounded-lg border border-gray-200 hover:bg-gray-100 text-gray-600 transition-colors"
-                        >
-                          <Download className="w-3 h-3" />
-                        </a>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+          {/* Diretório Local de Arquivos */}
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 text-[11px] text-gray-600 space-y-1">
+            <span className="font-bold text-gray-800">Diretório de Armazenamento Local:</span>
+            <p className="font-mono text-[10px] text-emerald-800 break-all">{discipline.localMaterialPath}</p>
           </div>
         </div>
 
-        {/* ============================================================== */}
-        {/* COLUNA DIREITA: SALA DE AULA SEQUENCIAL OU AVALIAÇÃO FINAL */}
-        {/* ============================================================== */}
+        {/* Coluna Direita: Conteúdo Ativo (Aula Sequencial OU Avaliação Final) */}
         <div className="lg:col-span-3 space-y-5">
-          {/* Mensagens de Feedback */}
+          {/* Feedback de Erro ou Sucesso */}
           {feedbackMessage && (
             <div
-              className={`p-4 rounded-xl border text-xs flex items-center space-x-2 animate-in fade-in duration-200 ${
+              className={`p-4 rounded-xl border text-xs flex items-center space-x-2 ${
                 feedbackMessage.type === 'success'
-                  ? 'bg-emerald-50 border-emerald-300 text-emerald-950 font-medium'
-                  : 'bg-red-50 border-red-300 text-red-950'
+                  ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+                  : 'bg-red-50 border-red-200 text-red-900'
               }`}
             >
               {feedbackMessage.type === 'success' ? (
@@ -906,20 +438,18 @@ export const Classroom: React.FC<ClassroomProps> = ({
             </div>
           )}
 
-          {/* MODO AVALIAÇÃO FINAL DO COMPONENTE */}
+          {/* SE AVALIAÇÃO FINAL ATIVA */}
           {isFinalExamActive ? (
             <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
               <div className="border-b border-gray-200 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
                   <span className="text-xs font-bold text-[#006633] uppercase">Exame de Conclusão do Componente</span>
                   <h3 className="text-xl font-black text-gray-900">Avaliação Final — {discipline.code}</h3>
-                  <p className="text-xs text-gray-500 mt-1">
-                    10 questões conceituais e aplicadas • Nota mínima para homologação: 7,0 / 10,0
-                  </p>
+                  <p className="text-xs text-gray-500 mt-1">10 questões conceituais e aplicadas • Nota mínima para aprovação: 7,0 / 10,0</p>
                 </div>
                 {isDisciplineApproved && (
                   <div className="bg-emerald-100 text-emerald-900 border border-emerald-300 px-3 py-1.5 rounded-lg text-xs font-bold self-start">
-                    ✓ Aprovado(a) com Nota {finalGrade?.toFixed(1)}/10,0
+                    ✓ Aprovado com Nota {finalGrade?.toFixed(1)}/10,0
                   </div>
                 )}
               </div>
@@ -935,7 +465,7 @@ export const Classroom: React.FC<ClassroomProps> = ({
                           key={oIdx}
                           className={`flex items-start space-x-2.5 p-2.5 rounded-lg border text-xs cursor-pointer transition-colors ${
                             finalExamAnswers[qIdx] === oIdx
-                              ? 'border-[#006633] bg-emerald-50 text-[#006633] font-semibold ring-1 ring-[#006633]'
+                              ? 'border-[#006633] bg-emerald-50 text-[#006633] font-semibold'
                               : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
                           }`}
                         >
@@ -979,27 +509,20 @@ export const Classroom: React.FC<ClassroomProps> = ({
               </div>
             </div>
           ) : (
-            // ==============================================================
-            // MODO AULA NORMAL SEQUENCIAL EM 5 ETAPAS OBRIGATÓRIAS
-            // ==============================================================
+            // AULA SEQUENCIAL NORMAL (5 ETAPAS)
             <>
               {/* Barra de Progresso das 5 Etapas Obrigatórias */}
-              <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                    {currentLesson.title} — Progressão Obrigatória:
-                  </div>
-                  <span className="text-[11px] font-mono text-emerald-800 font-semibold">
-                    Etapa {activeStepNumber} de 5
-                  </span>
+              <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs">
+                <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
+                  Sequência Obrigatória da Aula — Conclusão Passo a Passo:
                 </div>
 
                 <div className="grid grid-cols-5 gap-2 text-center text-xs">
                   {[
                     { num: 1, label: '1. Vídeo', icon: Video },
                     { num: 2, label: '2. Slides', icon: SlidersHorizontal },
-                    { num: 3, label: '3. PDF Didático', icon: FileText },
-                    { num: 4, label: '4. Teste de Fixação', icon: CheckSquare },
+                    { num: 3, label: '3. PDF', icon: FileText },
+                    { num: 4, label: '4. Teste', icon: CheckSquare },
                     { num: 5, label: '5. Liberação', icon: Unlock },
                   ].map(({ num, label, icon: Icon }) => {
                     const completed = isStepCompleted(num);
@@ -1014,11 +537,11 @@ export const Classroom: React.FC<ClassroomProps> = ({
                           setActiveStepNumber(num);
                           setFeedbackMessage(null);
                         }}
-                        className={`p-2.5 rounded-xl border font-semibold transition-all flex flex-col items-center justify-center space-y-1 cursor-pointer ${
+                        className={`p-2.5 rounded-lg border font-semibold transition-all flex flex-col items-center justify-center space-y-1 cursor-pointer ${
                           completed
                             ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
                             : isCurrent
-                            ? 'border-[#006633] bg-[#006633] text-white shadow-xs ring-2 ring-emerald-500/20'
+                            ? 'border-[#006633] bg-[#006633] text-white shadow-xs'
                             : unlocked
                             ? 'border-gray-200 bg-white text-gray-700 hover:border-emerald-300'
                             : 'border-gray-100 bg-gray-50 text-gray-400 cursor-not-allowed'
@@ -1027,7 +550,7 @@ export const Classroom: React.FC<ClassroomProps> = ({
                         <Icon className="w-4 h-4" />
                         <span className="text-[11px] leading-tight truncate w-full">{label}</span>
                         {completed ? (
-                          <span className="text-[10px] text-emerald-700 font-bold">✓ Concluído</span>
+                          <span className="text-[10px] text-emerald-700 font-bold">✓ Feito</span>
                         ) : !unlocked ? (
                           <span className="text-[10px] text-gray-400">🔒 Bloqueado</span>
                         ) : null}
@@ -1038,50 +561,43 @@ export const Classroom: React.FC<ClassroomProps> = ({
               </div>
 
               {/* CONTEÚDO DA ETAPA ATIVA DA AULA */}
-              <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs min-h-[460px] flex flex-col justify-between">
-                {/* ============================================================== */}
-                {/* ETAPA 1: VÍDEO-AULA */}
-                {/* ============================================================== */}
+              <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs min-h-[420px] flex flex-col justify-between">
+                {/* ETAPA 1: VÍDEO */}
                 {activeStepNumber === 1 && (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between border-b border-gray-100 pb-3">
                       <div>
                         <span className="text-xs font-bold text-[#006633] uppercase">Etapa 01 de 05</span>
-                        <h3 className="text-lg font-bold text-gray-900">Vídeo-Aula Expositiva e Introdução Temática</h3>
+                        <h3 className="text-lg font-bold text-gray-900">Vídeo-Aula Expositiva</h3>
                       </div>
                       <span className="text-xs font-semibold text-gray-500">Carga estimada: 25 min</span>
                     </div>
 
                     <div className="aspect-video bg-gray-900 rounded-xl overflow-hidden relative flex flex-col items-center justify-center text-white shadow-inner">
-                      <div className="absolute inset-0 bg-gradient-to-br from-[#003d1c]/80 via-black/80 to-teal-950/80"></div>
-                      <div className="relative z-10 text-center space-y-3 max-w-lg px-4">
-                        <div className="w-16 h-16 rounded-full bg-emerald-600/90 hover:bg-emerald-500 text-white flex items-center justify-center mx-auto shadow-lg transition-transform hover:scale-105 cursor-pointer">
-                          <Play className="w-7 h-7 ml-1 text-white" />
+                      <div className="absolute inset-0 bg-radial from-emerald-950/40 to-black/80"></div>
+                      <div className="relative z-10 text-center space-y-3 max-w-md px-4">
+                        <div className="w-14 h-14 rounded-full bg-emerald-600/90 hover:bg-emerald-500 text-white flex items-center justify-center mx-auto shadow-lg transition-transform hover:scale-105 cursor-pointer">
+                          <Play className="w-6 h-6 ml-1 text-white" />
                         </div>
                         <div>
-                          <span className="text-xs uppercase tracking-widest text-emerald-400 font-bold">
-                            {discipline.code} • {currentLesson.title}
-                          </span>
-                          <h4 className="font-bold text-base text-white mt-1">{discipline.title}</h4>
-                          <div className="mt-3 inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-200 text-xs font-medium">
-                            <Sparkles className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                            <span>Gravação audiovisual em estúdio instrucional • Lâminas e Apostila completas nos Passos 2 e 3</span>
+                          <h4 className="font-bold text-sm text-white">{currentLesson.title}</h4>
+                          <div className="mt-2 inline-flex items-center space-x-1.5 px-3 py-1 rounded-md bg-amber-500/20 border border-amber-500/30 text-amber-200 text-[11px] font-medium">
+                            <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                            <span>Gravação audiovisual em planejamento instrucional • Roteiro e conceitos na Apostila (Passo 3)</span>
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    <div className="text-xs text-gray-600 bg-gray-50 p-3.5 rounded-xl border border-gray-200 space-y-1">
-                      <p className="font-bold text-gray-800">Objetivo da Etapa 1:</p>
-                      <p>
-                        Acompanhar os conceitos fundamentais da aula e desbloquear o conjunto de lâminas pedagógicas (Passo 2).
-                      </p>
+                    <div className="text-xs text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                      <p className="font-bold text-gray-800">Critério de Conclusão da Etapa 1:</p>
+                      <p>Acompanhar a introdução conceitual da aula e confirmar o avanço para as lâminas (Passo 2).</p>
                     </div>
 
                     <button
                       disabled={actionLoading}
                       onClick={() => handleCompleteStep(1)}
-                      className="w-full bg-[#006633] hover:bg-[#004d25] text-white font-bold py-3.5 rounded-xl text-xs transition-colors flex items-center justify-center space-x-2 shadow-xs cursor-pointer"
+                      className="w-full bg-[#006633] hover:bg-[#004d25] text-white font-bold py-3 rounded-xl text-xs transition-colors flex items-center justify-center space-x-2 shadow-xs cursor-pointer"
                     >
                       <CheckCircle2 className="w-4 h-4" />
                       <span>{isStepCompleted(1) ? 'Etapa 1 Concluída (Revalidar)' : 'Concluir Introdução e Desbloquear Slides'}</span>
@@ -1089,250 +605,113 @@ export const Classroom: React.FC<ClassroomProps> = ({
                   </div>
                 )}
 
-                {/* ============================================================== */}
-                {/* ETAPA 2: SLIDES DA AULA */}
-                {/* ============================================================== */}
+                {/* ETAPA 2: SLIDES */}
                 {activeStepNumber === 2 && (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between border-b border-gray-100 pb-3">
                       <div>
                         <span className="text-xs font-bold text-[#006633] uppercase">Etapa 02 de 05</span>
-                        <h3 className="text-lg font-bold text-gray-900">Slides de Apresentação da Aula</h3>
+                        <h3 className="text-lg font-bold text-gray-900">Slides de Apresentação</h3>
                       </div>
                       <span className="text-xs font-semibold text-gray-500">Carga estimada: 15 min</span>
                     </div>
 
-                    {/* Destaque das Lâminas com Leitor Integrado e Download */}
-                    <div className="border border-emerald-200 bg-emerald-50/30 rounded-2xl p-6 sm:p-8 text-center space-y-4">
-                      <div className="w-16 h-16 rounded-2xl bg-emerald-100 text-[#006633] flex items-center justify-center mx-auto shadow-xs">
-                        <SlidersHorizontal className="w-8 h-8 text-[#006633]" />
-                      </div>
-
+                    <div className="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center space-y-4 bg-gray-50/50">
+                      <SlidersHorizontal className="w-12 h-12 text-emerald-700 mx-auto" />
                       <div className="max-w-md mx-auto space-y-1">
-                        <span className="text-[10px] font-bold bg-emerald-200 text-[#006633] px-2 py-0.5 rounded-full uppercase">
-                          Material Visual Oficial
-                        </span>
-                        <h4 className="font-bold text-gray-900 text-base">Lâminas Pedagógicas da Aula 01</h4>
-                        <p className="text-xs text-gray-600">
-                          Síntese visual, diagramas de arquitetura e esquemas instrucionais para assimilação conceitual.
+                        <h4 className="font-bold text-gray-900 text-sm">Conjunto de Lâminas Pedagógicas</h4>
+                        <p className="text-xs text-gray-500">
+                          Diagramas conceituais, esquemas e síntese visual dos tópicos da aula.
                         </p>
                         <p className="text-[11px] font-mono text-emerald-800 pt-1">
-                          Arquivo: {slidesFile.name} ({slidesFile.formattedSize})
+                          {discipline.localMaterialPath}/slides-aula-01.pdf
                         </p>
                       </div>
 
-                      <div className="pt-2 flex flex-wrap items-center justify-center gap-2">
-                        {/* BOTÃO PRINCIPAL: ABRIR NO LEITOR INTEGRADO */}
-                        <button
-                          onClick={() => handleOpenFile(slidesFile)}
-                          className="bg-[#006633] hover:bg-[#004d25] text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center space-x-2 transition-all shadow-xs cursor-pointer"
-                        >
-                          <Eye className="w-4 h-4" />
-                          <span>Abrir Slides no Leitor Integrado</span>
-                        </button>
-
-                        {/* ABRIR EM NOVA ABA */}
-                        <a
-                          href={slidesFile.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 font-bold px-3.5 py-2.5 rounded-xl text-xs flex items-center space-x-2 transition-colors cursor-pointer"
-                        >
-                          <ExternalLink className="w-3.5 h-3.5" />
-                          <span>Abrir em Nova Aba</span>
-                        </a>
-
-                        {/* BAIXAR PDF */}
-                        <a
-                          href={slidesFile.url}
-                          download
-                          className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 font-bold px-3.5 py-2.5 rounded-xl text-xs flex items-center space-x-2 transition-colors cursor-pointer"
-                        >
-                          <Download className="w-3.5 h-3.5" />
-                          <span>Baixar PDF</span>
-                        </a>
-                      </div>
+                      <a
+                        href={`${discipline.localMaterialPath}/slides-aula-01.pdf`}
+                        target="_blank"
+                        rel="noreferrer"
+                        download
+                        className="inline-flex items-center space-x-2 text-xs bg-white border border-emerald-300 hover:border-[#006633] px-3.5 py-2 rounded-lg text-emerald-800 font-bold transition-all shadow-xs cursor-pointer"
+                      >
+                        <Download className="w-3.5 h-3.5 text-emerald-700" />
+                        <span>Baixar Lâminas em PDF (slides-aula-01.pdf)</span>
+                      </a>
                     </div>
 
-                    <div className="text-xs text-gray-600 bg-gray-50 p-3.5 rounded-xl border border-gray-200 space-y-1">
+                    <div className="text-xs text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-200">
                       <p className="font-bold text-gray-800">Critério de Conclusão da Etapa 2:</p>
-                      <p>
-                        Revisar as lâminas pedagógicas e confirmar a conclusão para liberar o material didático em PDF (Passo 3).
-                      </p>
+                      <p>Revisar todas as lâminas e diagramas conceituais da apresentação.</p>
                     </div>
 
                     <button
                       disabled={actionLoading}
                       onClick={() => handleCompleteStep(2)}
-                      className="w-full bg-[#006633] hover:bg-[#004d25] text-white font-bold py-3.5 rounded-xl text-xs transition-colors flex items-center justify-center space-x-2 shadow-xs cursor-pointer"
+                      className="w-full bg-[#006633] hover:bg-[#004d25] text-white font-bold py-3 rounded-xl text-xs transition-colors flex items-center justify-center space-x-2 shadow-xs cursor-pointer"
                     >
                       <CheckCircle2 className="w-4 h-4" />
-                      <span>{isStepCompleted(2) ? 'Etapa 2 Concluída (Revalidar)' : 'Concluir Slides e Desbloquear Material Didático'}</span>
+                      <span>{isStepCompleted(2) ? 'Etapa 2 Concluída (Revalidar)' : 'Concluir Slides e Desbloquear Material PDF'}</span>
                     </button>
                   </div>
                 )}
 
-                {/* ============================================================== */}
-                {/* ETAPA 3: MATERIAL DIDÁTICO / APOSTILA EM PDF E TEXTO */}
-                {/* ============================================================== */}
+                {/* ETAPA 3: MATERIAL DIDÁTICO EM PDF */}
                 {activeStepNumber === 3 && (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between border-b border-gray-100 pb-3">
                       <div>
                         <span className="text-xs font-bold text-[#006633] uppercase">Etapa 03 de 05</span>
-                        <h3 className="text-lg font-bold text-gray-900">Material Didático da Disciplina</h3>
+                        <h3 className="text-lg font-bold text-gray-900">Material Didático em PDF (Apostila Técnica)</h3>
                       </div>
                       <span className="text-xs font-semibold text-gray-500">Carga estimada: 30 min</span>
                     </div>
 
-                    {/* Acervo de Materiais Didáticos da Disciplina (Aula + Livro Completo + Texto Puro) */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {/* Cartão 1: Apostila Didática da Aula (PDF) */}
-                      <div className="border border-gray-200 bg-white p-4 rounded-xl space-y-2.5 shadow-2xs hover:border-emerald-300 transition-colors">
-                        <div className="flex items-start space-x-2.5">
-                          <FileText className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
-                          <div>
-                            <span className="text-[10px] font-bold bg-red-100 text-red-800 px-1.5 py-0.2 rounded uppercase">PDF</span>
-                            <h4 className="font-bold text-xs text-gray-900 mt-0.5">Apostila da Aula 01</h4>
-                            <p className="text-[11px] text-gray-500 line-clamp-2">
-                              Fundamentos teóricos, procedimentos e laboratório temático da aula.
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="pt-1 flex items-center space-x-1.5">
-                          <button
-                            onClick={() => handleOpenFile(apostilaAulaPdfFile)}
-                            className="flex-1 bg-[#006633] hover:bg-[#004d25] text-white font-bold py-1.5 px-2.5 rounded-lg text-xs flex items-center justify-center space-x-1 transition-colors cursor-pointer"
-                          >
-                            <Eye className="w-3.5 h-3.5" />
-                            <span>Visualizar Online</span>
-                          </button>
-                          <a
-                            href={apostilaAulaPdfFile.url}
-                            download
-                            className="p-1.5 rounded-lg border border-gray-200 hover:bg-gray-100 text-gray-600 transition-colors"
-                            title="Baixar PDF"
-                          >
-                            <Download className="w-3.5 h-3.5" />
-                          </a>
+                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 space-y-4">
+                      <div className="flex items-start space-x-3">
+                        <FileText className="w-6 h-6 text-[#006633] mt-1 shrink-0" />
+                        <div className="space-y-1">
+                          <h4 className="font-bold text-sm text-gray-900">Apostila Completa da Aula</h4>
+                          <p className="text-xs text-gray-600 leading-relaxed">
+                            Contém o aprofundamento teórico, tutoriais práticos em Python, referências bibliográficas e exercícios de fixação.
+                          </p>
+                          <p className="text-[11px] font-mono text-emerald-800 pt-1">
+                            {discipline.localMaterialPath}/apostila-aula-01.pdf
+                          </p>
                         </div>
                       </div>
 
-                      {/* Cartão 2: Livro Técnico Completo da Disciplina (PDF) */}
-                      {completeBookPdfFile ? (
-                        <div className="border border-emerald-300 bg-emerald-50/30 p-4 rounded-xl space-y-2.5 shadow-2xs hover:bg-emerald-50/60 transition-colors">
-                          <div className="flex items-start space-x-2.5">
-                            <BookOpen className="w-5 h-5 text-[#006633] shrink-0 mt-0.5" />
-                            <div>
-                              <span className="text-[10px] font-bold bg-emerald-200 text-[#006633] px-1.5 py-0.2 rounded uppercase">Livro Completo</span>
-                              <h4 className="font-bold text-xs text-gray-900 mt-0.5">{completeBookPdfFile.label}</h4>
-                              <p className="text-[11px] text-gray-600 line-clamp-2">
-                                Compêndio completo de {discipline.code} com todas as seções e referências bibliográficas.
-                              </p>
-                            </div>
-                          </div>
+                      <div className="pt-1">
+                        <a
+                          href={`${discipline.localMaterialPath}/apostila-aula-01.pdf`}
+                          target="_blank"
+                          rel="noreferrer"
+                          download
+                          className="inline-flex items-center space-x-2 text-xs bg-[#006633] hover:bg-[#004d25] text-white px-3.5 py-2 rounded-lg font-bold transition-colors shadow-xs cursor-pointer"
+                        >
+                          <Download className="w-3.5 h-3.5 text-white" />
+                          <span>Baixar Apostila Técnica em PDF (apostila-aula-01.pdf)</span>
+                        </a>
+                      </div>
 
-                          <div className="pt-1 flex items-center space-x-1.5">
-                            <button
-                              onClick={() => handleOpenFile(completeBookPdfFile)}
-                              className="flex-1 bg-[#006633] hover:bg-[#004d25] text-white font-bold py-1.5 px-2.5 rounded-lg text-xs flex items-center justify-center space-x-1 transition-colors cursor-pointer"
-                            >
-                              <BookOpen className="w-3.5 h-3.5" />
-                              <span>Ler Livro Completo</span>
-                            </button>
-                            <a
-                              href={completeBookPdfFile.url}
-                              download
-                              className="p-1.5 rounded-lg border border-gray-200 hover:bg-gray-100 text-gray-600 transition-colors"
-                              title="Baixar PDF do Livro Completo"
-                            >
-                              <Download className="w-3.5 h-3.5" />
-                            </a>
-                          </div>
-                        </div>
-                      ) : null}
-
-                      {/* Cartão 3: Versão Textual Formatada (TXT) */}
-                      {apostilaTxtFile ? (
-                        <div className="border border-gray-200 bg-white p-4 rounded-xl space-y-2.5 shadow-2xs hover:border-emerald-300 transition-colors">
-                          <div className="flex items-start space-x-2.5">
-                            <File className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
-                            <div>
-                              <span className="text-[10px] font-bold bg-blue-100 text-blue-800 px-1.5 py-0.2 rounded uppercase">TXT</span>
-                              <h4 className="font-bold text-xs text-gray-900 mt-0.5">Versão em Texto Integral</h4>
-                              <p className="text-[11px] text-gray-500 line-clamp-2">
-                                Texto didático completo em formato plano para leitura rápida e pesquisa de trechos.
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="pt-1 flex items-center space-x-1.5">
-                            <button
-                              onClick={() => handleOpenFile(apostilaTxtFile)}
-                              className="flex-1 bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 font-bold py-1.5 px-2.5 rounded-lg text-xs flex items-center justify-center space-x-1 transition-colors cursor-pointer"
-                            >
-                              <Search className="w-3.5 h-3.5 text-blue-600" />
-                              <span>Ler no Navegador</span>
-                            </button>
-                            <a
-                              href={apostilaTxtFile.url}
-                              download
-                              className="p-1.5 rounded-lg border border-gray-200 hover:bg-gray-100 text-gray-600 transition-colors"
-                              title="Baixar TXT"
-                            >
-                              <Download className="w-3.5 h-3.5" />
-                            </a>
-                          </div>
-                        </div>
-                      ) : null}
-
-                      {/* Cartão 4: Material de Estudo Oficial da Disciplina (TXT) */}
-                      {officialStudyTxtFile ? (
-                        <div className="border border-gray-200 bg-white p-4 rounded-xl space-y-2.5 shadow-2xs hover:border-emerald-300 transition-colors">
-                          <div className="flex items-start space-x-2.5">
-                            <FileText className="w-5 h-5 text-emerald-700 shrink-0 mt-0.5" />
-                            <div>
-                              <span className="text-[10px] font-bold bg-emerald-100 text-[#006633] px-1.5 py-0.2 rounded uppercase">Texto Oficial</span>
-                              <h4 className="font-bold text-xs text-gray-900 mt-0.5">Material de Estudo Oficial</h4>
-                              <p className="text-[11px] text-gray-500 line-clamp-2">
-                                Síntese curricular oficial, diretrizes temáticas e conceitos-chave da disciplina.
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="pt-1 flex items-center space-x-1.5">
-                            <button
-                              onClick={() => handleOpenFile(officialStudyTxtFile)}
-                              className="flex-1 bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 font-bold py-1.5 px-2.5 rounded-lg text-xs flex items-center justify-center space-x-1 transition-colors cursor-pointer"
-                            >
-                              <Eye className="w-3.5 h-3.5 text-emerald-700" />
-                              <span>Visualizar Texto</span>
-                            </button>
-                            <a
-                              href={officialStudyTxtFile.url}
-                              download
-                              className="p-1.5 rounded-lg border border-gray-200 hover:bg-gray-100 text-gray-600 transition-colors"
-                              title="Baixar Material de Estudo"
-                            >
-                              <Download className="w-3.5 h-3.5" />
-                            </a>
-                          </div>
-                        </div>
-                      ) : null}
+                      <div className="bg-white p-4 rounded-lg border border-gray-200 text-xs text-gray-700 space-y-2">
+                        <p className="font-bold text-gray-900">Tópicos Abordados no Texto:</p>
+                        <ul className="list-disc list-inside space-y-1 text-gray-600 pl-1">
+                          <li>Princípios e fundamentos da disciplina {discipline.title}</li>
+                          <li>Competências técnicas oficiais: {discipline.competencies.join(', ')}</li>
+                        </ul>
+                      </div>
                     </div>
 
-                    <div className="text-xs text-gray-600 bg-gray-50 p-3.5 rounded-xl border border-gray-200 space-y-1">
+                    <div className="text-xs text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-200">
                       <p className="font-bold text-gray-800">Critério de Conclusão da Etapa 3:</p>
-                      <p>
-                        Efetuar a leitura do material instrucional desta aula e confirmar o avanço para o Teste de Fixação (Passo 4).
-                      </p>
+                      <p>Leitura técnica do texto da apostila para habilitação do Teste de Fixação (Passo 4).</p>
                     </div>
 
                     <button
                       disabled={actionLoading}
                       onClick={() => handleCompleteStep(3)}
-                      className="w-full bg-[#006633] hover:bg-[#004d25] text-white font-bold py-3.5 rounded-xl text-xs transition-colors flex items-center justify-center space-x-2 shadow-xs cursor-pointer"
+                      className="w-full bg-[#006633] hover:bg-[#004d25] text-white font-bold py-3 rounded-xl text-xs transition-colors flex items-center justify-center space-x-2 shadow-xs cursor-pointer"
                     >
                       <CheckCircle2 className="w-4 h-4" />
                       <span>{isStepCompleted(3) ? 'Etapa 3 Concluída (Revalidar)' : 'Confirmar Leitura e Liberar Teste de Fixação'}</span>
@@ -1340,9 +719,7 @@ export const Classroom: React.FC<ClassroomProps> = ({
                   </div>
                 )}
 
-                {/* ============================================================== */}
-                {/* ETAPA 4: TESTE DE FIXAÇÃO DINÂMICO (3 QUESTÕES) */}
-                {/* ============================================================== */}
+                {/* ETAPA 4: TESTE DE FIXAÇÃO DA AULA (3 QUESTÕES) */}
                 {activeStepNumber === 4 && (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between border-b border-gray-100 pb-3">
@@ -1353,63 +730,122 @@ export const Classroom: React.FC<ClassroomProps> = ({
                       <span className="text-xs font-semibold text-gray-500">Nota mínima: 7,0 / 10,0</span>
                     </div>
 
-                    {quizLoading ? (
-                      <div className="py-8 text-center text-xs text-gray-500 animate-pulse">
-                        Carregando questões de fixação para {currentLesson.title}...
+                    <div className="space-y-4">
+                      {/* Questão 1 */}
+                      <div className="border border-gray-200 rounded-xl p-4 space-y-3 bg-gray-50/40">
+                        <p className="text-xs font-bold text-gray-900">
+                          1. No contexto de {discipline.title}, qual a principal finalidade da organização modular dos componentes de IA?
+                        </p>
+                        <div className="space-y-2">
+                          {[
+                            'Eliminar a necessidade de testes de código e validação de dados.',
+                            'Garantir desacoplamento, reprodutibilidade de experimentos e manutenção escalável.',
+                            'Tornar o código dependente exclusivamente de uma única biblioteca proprietária.',
+                          ].map((opt, oIdx) => (
+                            <label
+                              key={oIdx}
+                              className={`flex items-center space-x-2 p-2.5 rounded-lg border text-xs cursor-pointer transition-colors ${
+                                quizAnswers[0] === oIdx
+                                  ? 'border-[#006633] bg-emerald-50 text-[#006633] font-semibold'
+                                  : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                              }`}
+                            >
+                              <input
+                                type="radio"
+                                name="q0"
+                                checked={quizAnswers[0] === oIdx}
+                                onChange={() => setQuizAnswers({ ...quizAnswers, 0: oIdx })}
+                                className="text-[#006633] focus:ring-emerald-500"
+                              />
+                              <span>{opt}</span>
+                            </label>
+                          ))}
+                        </div>
                       </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {quizQuestions.map((q, qIdx) => (
-                          <div key={qIdx} className="border border-gray-200 rounded-xl p-4 space-y-3 bg-gray-50/40">
-                            <p className="text-xs font-bold text-gray-900 leading-relaxed">{q.question}</p>
-                            <div className="space-y-2">
-                              {q.options.map((opt, oIdx) => (
-                                <label
-                                  key={oIdx}
-                                  className={`flex items-start space-x-2.5 p-2.5 rounded-lg border text-xs cursor-pointer transition-colors ${
-                                    quizAnswers[qIdx] === oIdx
-                                      ? 'border-[#006633] bg-emerald-50 text-[#006633] font-semibold ring-1 ring-[#006633]'
-                                      : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
-                                  }`}
-                                >
-                                  <input
-                                    type="radio"
-                                    name={`quiz_q_${qIdx}`}
-                                    checked={quizAnswers[qIdx] === oIdx}
-                                    onChange={() => setQuizAnswers({ ...quizAnswers, [qIdx]: oIdx })}
-                                    className="mt-0.5 text-[#006633] focus:ring-emerald-500"
-                                  />
-                                  <span>{opt}</span>
-                                </label>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
+
+                      {/* Questão 2 */}
+                      <div className="border border-gray-200 rounded-xl p-4 space-y-3 bg-gray-50/40">
+                        <p className="text-xs font-bold text-gray-900">
+                          2. Qual a regra fundamental de segurança e arquitetura ao implementar agentes educacionais de inteligência artificial?
+                        </p>
+                        <div className="space-y-2">
+                          {[
+                            'Colocar a chave de API no frontend para acelerar as requisições.',
+                            'Permitir que o agente de chat altere notas de alunos automaticamente.',
+                            'Executar todas as chamadas de IA no servidor com tratamento rigoroso e segredos protegidos.',
+                          ].map((opt, oIdx) => (
+                            <label
+                              key={oIdx}
+                              className={`flex items-center space-x-2 p-2.5 rounded-lg border text-xs cursor-pointer transition-colors ${
+                                quizAnswers[1] === oIdx
+                                  ? 'border-[#006633] bg-emerald-50 text-[#006633] font-semibold'
+                                  : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                              }`}
+                            >
+                              <input
+                                type="radio"
+                                name="q1"
+                                checked={quizAnswers[1] === oIdx}
+                                onChange={() => setQuizAnswers({ ...quizAnswers, 1: oIdx })}
+                                className="text-[#006633] focus:ring-emerald-500"
+                              />
+                              <span>{opt}</span>
+                            </label>
+                          ))}
+                        </div>
                       </div>
-                    )}
+
+                      {/* Questão 3 */}
+                      <div className="border border-gray-200 rounded-xl p-4 space-y-3 bg-gray-50/40">
+                        <p className="text-xs font-bold text-gray-900">
+                          3. Por que a verificação de dependências de desbloqueio sequencial deve ser realizada obrigatoriamente no backend?
+                        </p>
+                        <div className="space-y-2">
+                          {[
+                            'Para impedir manipulações no cliente e garantir a integridade do percurso acadêmico.',
+                            'Apenas para aumentar a latência de carregamento da página.',
+                            'Porque os navegadores não suportam verificação condicional.',
+                          ].map((opt, oIdx) => (
+                            <label
+                              key={oIdx}
+                              className={`flex items-center space-x-2 p-2.5 rounded-lg border text-xs cursor-pointer transition-colors ${
+                                quizAnswers[2] === oIdx
+                                  ? 'border-[#006633] bg-emerald-50 text-[#006633] font-semibold'
+                                  : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                              }`}
+                            >
+                              <input
+                                type="radio"
+                                name="q2"
+                                checked={quizAnswers[2] === oIdx}
+                                onChange={() => setQuizAnswers({ ...quizAnswers, 2: oIdx })}
+                                className="text-[#006633] focus:ring-emerald-500"
+                              />
+                              <span>{opt}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
 
                     {quizResult && (
                       <div
                         className={`p-4 rounded-xl border text-xs space-y-1 ${
                           quizResult.passed
-                            ? 'bg-emerald-50 border-emerald-300 text-emerald-950 font-medium'
+                            ? 'bg-emerald-50 border-emerald-300 text-emerald-950'
                             : 'bg-red-50 border-red-300 text-red-950'
                         }`}
                       >
-                        <p className="font-bold text-sm">Nota Obtida: {quizResult.score.toFixed(1)} / 10,0</p>
+                        <p className="font-bold">Nota Obtida: {quizResult.score.toFixed(1)} / 10,0</p>
                         <p>{quizResult.feedback}</p>
-                        {quizResult.explanation && (
-                          <p className="text-[11px] text-gray-600 pt-1">
-                            <strong>Fundamentação Técnica:</strong> {quizResult.explanation}
-                          </p>
-                        )}
+                        <p className="text-[11px] text-gray-600 pt-1">Fundamentação: {quizResult.explanation}</p>
                       </div>
                     )}
 
                     <button
-                      disabled={actionLoading || quizLoading}
+                      disabled={actionLoading}
                       onClick={handleSubmitQuiz}
-                      className="w-full bg-[#006633] hover:bg-[#004d25] text-white font-bold py-3.5 rounded-xl text-xs transition-colors flex items-center justify-center space-x-2 shadow-xs cursor-pointer"
+                      className="w-full bg-[#006633] hover:bg-[#004d25] text-white font-bold py-3 rounded-xl text-xs transition-colors flex items-center justify-center space-x-2 shadow-xs cursor-pointer"
                     >
                       <CheckSquare className="w-4 h-4" />
                       <span>Submeter Respostas para Correção no Servidor</span>
@@ -1417,9 +853,7 @@ export const Classroom: React.FC<ClassroomProps> = ({
                   </div>
                 )}
 
-                {/* ============================================================== */}
                 {/* ETAPA 5: LIBERAÇÃO DA PRÓXIMA AULA */}
-                {/* ============================================================== */}
                 {activeStepNumber === 5 && (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between border-b border-gray-100 pb-3">
@@ -1427,27 +861,27 @@ export const Classroom: React.FC<ClassroomProps> = ({
                         <span className="text-xs font-bold text-[#006633] uppercase">Etapa 05 de 05</span>
                         <h3 className="text-lg font-bold text-gray-900">Liberação e Registro Acadêmico</h3>
                       </div>
-                      <span className="text-xs font-semibold text-emerald-700">✓ Concluído</span>
+                      <span className="text-xs font-semibold text-emerald-700">✓ Aprovado</span>
                     </div>
 
-                    <div className="border border-emerald-200 bg-emerald-50/60 rounded-2xl p-8 text-center space-y-3">
-                      <div className="w-16 h-16 rounded-2xl bg-emerald-100 text-[#006633] flex items-center justify-center mx-auto shadow-xs">
+                    <div className="border border-emerald-200 bg-emerald-50/60 rounded-xl p-8 text-center space-y-3">
+                      <div className="w-14 h-14 rounded-full bg-emerald-100 text-[#006633] flex items-center justify-center mx-auto shadow-xs">
                         <Award className="w-8 h-8 text-[#006633]" />
                       </div>
-                      <h4 className="text-lg font-extrabold text-emerald-950">Aula Concluída com Sucesso!</h4>
+                      <h4 className="text-base font-extrabold text-emerald-950">Aula Concluída com Sucesso!</h4>
                       <p className="text-xs text-emerald-800 max-w-md mx-auto">
-                        Todas as 4 etapas prévias foram auditadas e salvas no banco de dados. O percurso formativo foi atualizado com segurança.
+                        Todas as 4 etapas prévias foram validadas no servidor. A próxima aula da disciplina está liberada para acesso imediato.
                       </p>
 
                       <div className="pt-2 text-[11px] text-emerald-700 font-mono">
-                        Registro de conclusão persistido de forma idempotente.
+                        Registro de conclusão persistido de forma idempotente no PostgreSQL.
                       </div>
                     </div>
 
                     <button
                       disabled={actionLoading}
                       onClick={() => handleCompleteStep(5)}
-                      className="w-full bg-[#006633] hover:bg-[#004d25] text-white font-bold py-3.5 rounded-xl text-xs transition-colors flex items-center justify-center space-x-2 shadow-xs cursor-pointer"
+                      className="w-full bg-[#006633] hover:bg-[#004d25] text-white font-bold py-3 rounded-xl text-xs transition-colors flex items-center justify-center space-x-2 shadow-xs cursor-pointer"
                     >
                       <Unlock className="w-4 h-4" />
                       <span>Confirmar Registro e Prosseguir na Matriz Curricular</span>
@@ -1459,169 +893,6 @@ export const Classroom: React.FC<ClassroomProps> = ({
           )}
         </div>
       </div>
-
-      {/* ============================================================== */}
-      {/* 3. MODAL LEITOR INTERATIVO DE DOCUMENTOS (PDF, TXT, MD) */}
-      {/* ============================================================== */}
-      {isReaderOpen && readerFile && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xs p-3 sm:p-6 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl w-full max-w-5xl h-[90vh] flex flex-col shadow-2xl overflow-hidden border border-gray-200">
-            {/* Cabeçalho do Leitor */}
-            <div className="p-4 sm:p-5 border-b border-gray-200 bg-gray-50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 rounded-xl bg-white border border-gray-200 text-[#006633]">
-                  {readerFile.type === 'pdf' ? (
-                    <FileText className="w-5 h-5 text-red-600" />
-                  ) : readerFile.type === 'markdown' ? (
-                    <FileCode className="w-5 h-5 text-purple-600" />
-                  ) : (
-                    <File className="w-5 h-5 text-blue-600" />
-                  )}
-                </div>
-
-                <div>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-[10px] font-black uppercase tracking-wider bg-gray-200 text-gray-800 px-2 py-0.5 rounded">
-                      {readerFile.type.toUpperCase()}
-                    </span>
-                    <span className="text-xs text-gray-500 font-mono">{readerFile.formattedSize}</span>
-                  </div>
-                  <h3 className="text-sm sm:text-base font-bold text-gray-900 truncate max-w-md">
-                    {readerFile.label}
-                  </h3>
-                </div>
-              </div>
-
-              {/* Botões de Ação do Leitor */}
-              <div className="flex items-center space-x-2 self-end sm:self-auto">
-                {readerFile.type !== 'pdf' && (
-                  <button
-                    onClick={handleCopyText}
-                    className="p-2 rounded-xl border border-gray-200 hover:bg-white text-gray-700 transition-colors text-xs font-semibold flex items-center space-x-1 cursor-pointer"
-                    title="Copiar texto completo"
-                  >
-                    {hasCopied ? (
-                      <>
-                        <Check className="w-3.5 h-3.5 text-emerald-600" />
-                        <span className="text-emerald-700">Copiado!</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-3.5 h-3.5" />
-                        <span className="hidden sm:inline">Copiar</span>
-                      </>
-                    )}
-                  </button>
-                )}
-
-                <a
-                  href={readerFile.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="p-2 rounded-xl border border-gray-200 hover:bg-white text-gray-700 transition-colors text-xs font-semibold flex items-center space-x-1"
-                  title="Abrir em Nova Aba"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Nova Aba</span>
-                </a>
-
-                <a
-                  href={readerFile.url}
-                  download
-                  className="bg-[#006633] hover:bg-[#004d25] text-white p-2 sm:px-3 rounded-xl text-xs font-bold flex items-center space-x-1 shadow-xs transition-colors"
-                  title="Baixar Arquivo"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Baixar</span>
-                </a>
-
-                <button
-                  onClick={() => setIsReaderOpen(false)}
-                  className="p-2 rounded-xl bg-gray-200 hover:bg-gray-300 text-gray-800 transition-colors cursor-pointer"
-                  title="Fechar Leitor"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
-            {/* Barra de Pesquisa de Texto (para arquivos TXT e MD) */}
-            {readerFile.type !== 'pdf' && (
-              <div className="px-5 py-2.5 bg-white border-b border-gray-100 flex items-center space-x-3 text-xs">
-                <Search className="w-4 h-4 text-gray-400 shrink-0" />
-                <input
-                  type="text"
-                  placeholder="Pesquisar termo neste arquivo..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="flex-1 outline-hidden text-gray-800 placeholder-gray-400 text-xs"
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery('')}
-                    className="text-gray-400 hover:text-gray-600 text-[11px]"
-                  >
-                    Limpar
-                  </button>
-                )}
-              </div>
-            )}
-
-            {/* Corpo do Documento */}
-            <div className="flex-1 overflow-hidden bg-gray-100 p-2 sm:p-4">
-              {readerFile.type === 'pdf' ? (
-                // Visualizador de PDF Embutido
-                <div className="w-full h-full rounded-2xl overflow-hidden bg-white border border-gray-300 shadow-inner flex flex-col">
-                  <iframe
-                    src={`${readerFile.url}#view=FitH`}
-                    title={readerFile.label}
-                    className="w-full flex-1 border-0"
-                  />
-                </div>
-              ) : (
-                // Visualizador de Texto / Markdown
-                <div className="w-full h-full bg-white rounded-2xl border border-gray-200 shadow-inner p-5 sm:p-8 overflow-y-auto font-mono text-xs text-gray-800 leading-relaxed whitespace-pre-wrap select-text">
-                  {contentLoading ? (
-                    <div className="flex items-center justify-center h-full">
-                      <div className="text-center space-y-2">
-                        <div className="w-8 h-8 border-3 border-[#006633] border-t-transparent rounded-full animate-spin mx-auto"></div>
-                        <p className="text-gray-500 font-sans text-xs">Carregando conteúdo do arquivo...</p>
-                      </div>
-                    </div>
-                  ) : readerContent ? (
-                    searchQuery ? (
-                      // Destaque de pesquisa
-                      readerContent.split(new RegExp(`(${searchQuery})`, 'gi')).map((part, i) =>
-                        part.toLowerCase() === searchQuery.toLowerCase() ? (
-                          <mark key={i} className="bg-yellow-200 text-gray-950 font-bold px-0.5 rounded">
-                            {part}
-                          </mark>
-                        ) : (
-                          part
-                        )
-                      )
-                    ) : (
-                      readerContent
-                    )
-                  ) : (
-                    'Arquivo sem conteúdo disponível.'
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Rodapé do Modal */}
-            <div className="p-3 bg-gray-50 border-t border-gray-200 px-5 flex items-center justify-between text-[11px] text-gray-500">
-              <span className="font-mono text-emerald-800 truncate">
-                Caminho: {readerFile.url}
-              </span>
-              <span className="hidden sm:inline">
-                CAMPOS IA — Plataforma Educacional Oficial (1.000h)
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

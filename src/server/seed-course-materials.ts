@@ -26,11 +26,11 @@ function generateValidPDF(title: string, author: string, pages: Array<{ header: 
     
     objects.push(`${pageObjNum} 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents ${contentObjNum} 0 R /Resources << /Font << /F1 ${fontObjNum} 0 R >> >> >>\nendobj`);
     
-    // Cabeçalho institucional padronizado para modo de produção oficial
-    const headerL1 = 'CAMPOS IA — CURSO TECNICO EM INTELIGENCIA ARTIFICIAL (1.000 HORAS)';
-    const headerL2 = 'MATERIAL DIDATICO INSTITUCIONAL — MODO DE PRODUCAO';
-    const headerL3 = 'Ambiente Virtual de Aprendizagem Oficial • Rede Federal de Educacao Profissional e Tecnologica';
-    const fullText = `[${title.toUpperCase()} - PAGINA ${i + 1}]\n${headerL1}\n${headerL2}\n${headerL3}\n\n${page.header}\n\n${page.text}`;
+    // Converte texto em comandos de desenho de texto no fluxo PDF com aviso inequívoco de material experimental
+    const disclaimerL1 = 'AVISO: MATERIAL DIDATICO EXPERIMENTAL DE DESENVOLVIMENTO';
+    const disclaimerL2 = 'AGUARDANDO HOMOLOGACAO INSTITUCIONAL';
+    const disclaimerL3 = 'Este conteudo destina-se a validacao tecnica da plataforma e nao substitui apostilas oficialmente aprovadas pela instituicao.';
+    const fullText = `[${title.toUpperCase()} - PAGINA ${i + 1}]\n${disclaimerL1}\n${disclaimerL2}\n${disclaimerL3}\n\n${page.header}\n\n${page.text}`;
     const lines = fullText.split('\n').filter(l => l.trim().length > 0);
     
     let streamText = 'BT\n/F1 11 Tf\n45 740 Td\n15 TL\n';
@@ -88,7 +88,7 @@ export const ALL_DISCIPLINES_MATERIALS = [
   // =========================================================================
   {
     dir: 'modulo-1/01-fundamentos',
-    pdfName: 'apostila-aula-01.pdf',
+    pdfName: 'apostila-fundamentos-sistemas-linux.pdf',
     title: 'INF-101: Fundamentos de Informatica e Linux CLI',
     pages: [
       {
@@ -517,11 +517,10 @@ export const ALL_DISCIPLINES_MATERIALS = [
 ];
 
 /**
-/**
- * Cria os materiais didáticos em PDF e TXT para todas as 20 disciplinas do Curso Técnico em IA em Modo de Produção
+ * Cria os materiais didáticos em PDF e TXT para todas as 20 disciplinas do Curso Técnico em IA
  */
 export function seedAllCourseMaterials() {
-  console.log('📚 Gerando materiais didáticos em modo de produção oficial para as 20 disciplinas...');
+  console.log('📚 Gerando materiais didáticos experimentais do curso (aguardando homologação institucional)...');
 
   for (const disc of ALL_DISCIPLINES_MATERIALS) {
     const fullDirPath = path.join(rootCoursesDir, disc.dir);
@@ -529,57 +528,61 @@ export function seedAllCourseMaterials() {
       fs.mkdirSync(fullDirPath, { recursive: true });
     }
 
-    // 1. Gera o arquivo PDF completo da disciplina com estrutura oficial
+    // 1. Gera o arquivo PDF com estrutura PDF 1.4 válida e tarja de aviso experimental
     const pdfPath = path.join(fullDirPath, disc.pdfName);
-    const pdfBuffer = generateValidPDF(disc.title, 'CAMPOS IA — Corpo Docente Oficial', disc.pages);
+    const pdfBuffer = generateValidPDF(disc.title, 'Ambiente Experimental de Validacao Tecnica', disc.pages);
     fs.writeFileSync(pdfPath, pdfBuffer);
 
-    // 2. Garante a existência de apostila-aula-01.pdf
+    // 2. Garante a existência de apostila-aula-01.pdf (material referenciado pelas aulas nos passos)
     const aula01PdfPath = path.join(fullDirPath, 'apostila-aula-01.pdf');
     fs.writeFileSync(aula01PdfPath, pdfBuffer);
 
-    // 2.1 Garante a existência de slides-aula-01.pdf (lâminas de aula para o Passo 2)
+    // 2.1 Garante a existência de slides-aula-01.pdf (lâminas de aula referenciadas no Passo 2)
     const slidesPdfPath = path.join(fullDirPath, 'slides-aula-01.pdf');
     const slidesPages = disc.pages.map((p, idx) => ({
       header: `LAMINA DIDATICA ${idx + 1}: ${p.header.toUpperCase()}`,
       text: `SINTESE CONCEITUAL E DIAGRAMAS:\n${p.text}`,
     }));
-    const slidesBuffer = generateValidPDF(`SLIDES: ${disc.title}`, 'CAMPOS IA — Corpo Docente Oficial', slidesPages);
+    const slidesBuffer = generateValidPDF(`SLIDES: ${disc.title}`, 'Corpo Docente - Laminas de Aula', slidesPages);
     fs.writeFileSync(slidesPdfPath, slidesBuffer);
 
-    // 3. Gera a versão em texto estruturado oficial
-    const txtPath = path.join(fullDirPath, 'material-estudo.txt');
+    // 3. Remove eventual arquivo legado com nomenclatura oficial antiga se presente
+    const legacyOfficialTxt = path.join(fullDirPath, 'material-oficial-estudo.txt');
+    if (fs.existsSync(legacyOfficialTxt)) {
+      try {
+        fs.unlinkSync(legacyOfficialTxt);
+      } catch {}
+    }
+
+    // 4. Gera a versão em texto estruturado com identificação inequívoca de material experimental
+    const txtPath = path.join(fullDirPath, 'material-estudo-experimental.txt');
     let txtContent = `# ${disc.title.toUpperCase()}\n`;
-    txtContent += `# CAMPOS IA — CURSO TÉCNICO DE NÍVEL MÉDIO EM INTELIGÊNCIA ARTIFICIAL (1.000 HORAS)\n`;
-    txtContent += `# MATERIAL DIDÁTICO OFICIAL — MODO DE PRODUÇÃO\n\n`;
+    txtContent += `# MATERIAL DIDÁTICO EXPERIMENTAL DE DESENVOLVIMENTO — AGUARDANDO HOMOLOGAÇÃO INSTITUCIONAL. Este conteúdo destina-se à validação técnica da plataforma e não substitui apostilas oficialmente aprovadas pela instituição.\n\n`;
     disc.pages.forEach((p, idx) => {
       txtContent += `--- Página ${idx + 1}: ${p.header}\n${p.text}\n\n`;
     });
     fs.writeFileSync(txtPath, txtContent, 'utf8');
 
-    // Mantém material-estudo-experimental.txt atualizado com conteúdo de produção para compatibilidade retroativa
-    const legacyTxtPath = path.join(fullDirPath, 'material-estudo-experimental.txt');
-    fs.writeFileSync(legacyTxtPath, txtContent, 'utf8');
-
-    // 4. Gera também apostila-aula-01.txt para leitura e RAG
+    // 5. Gera também apostila-aula-01.txt para compatibilidade e isolamento de RAG
     const aula01TxtPath = path.join(fullDirPath, 'apostila-aula-01.txt');
     fs.writeFileSync(aula01TxtPath, txtContent, 'utf8');
 
-    // 5. Gera o README.md oficial da disciplina
+    // 6. Gera o README.md da disciplina
     const readmePath = path.join(fullDirPath, 'README.md');
-    const readmeContent = `# ${disc.title}\n\n` +
-      `Plataforma CAMPOS IA — Curso Técnico de Nível Médio em Inteligência Artificial (1.000 horas).\n\n` +
-      `Acervo didático oficial de apoio ao aprendizado, laboratórios práticos e suporte via Tutor IA com RAG.\n\n` +
-      `### Arquivos disponíveis no diretório:\n` +
-      `- \`${disc.pdfName}\`: Apostila técnica completa em formato PDF\n` +
-      `- \`apostila-aula-01.pdf\`: Apostila de conteúdo da Aula 01\n` +
-      `- \`slides-aula-01.pdf\`: Lâminas de apresentação em PDF da Aula 01\n` +
-      `- \`material-estudo.txt\`: Texto oficial para estudo e indexação semântica\n` +
-      `- \`apostila-aula-01.txt\`: Versão textual da Aula 01\n`;
+    const readmeContent = `# ${disc.title}\n\nAcervo didático local para estudo, laboratórios e suporte via Tutor IA com RAG.\n\n` +
+      `**Aviso:** Material didático experimental de desenvolvimento — aguardando homologação institucional.\n\n` +
+      `Arquivos disponíveis no diretório:\n` +
+      `- \`${disc.pdfName}\`: Apostila técnica completa em formato PDF 1.4\n` +
+      `- \`apostila-aula-01.pdf\`: Material de apoio da aula 01\n` +
+      `- \`slides-aula-01.pdf\`: Lâminas didáticas sintetizadas em PDF para aula 01\n` +
+      `- \`material-estudo-experimental.txt\`: Texto estruturado para indexação vetorial e lexical\n` +
+      `- \`apostila-aula-01.txt\`: Transcrição textual da aula 01\n`;
     fs.writeFileSync(readmePath, readmeContent, 'utf8');
+
+    console.log(`✅ [SEED] Gerados materiais didáticos experimentais para ${disc.dir}: ${disc.pdfName}, apostila-aula-01.pdf, slides-aula-01.pdf e arquivos de texto`);
   }
 
-  console.log('🎉 Materiais didáticos oficiais de todas as 20 disciplinas gerados com sucesso!');
+  console.log('🎉 Materiais didáticos experimentais de todas as 20 disciplinas gerados com sucesso!');
 }
 
 // Se executado diretamente
