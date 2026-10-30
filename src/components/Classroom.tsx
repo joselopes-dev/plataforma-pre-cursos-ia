@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Discipline, Lesson, LessonStep, User, FinalExamQuestion } from '../types/index.ts';
+import { Discipline, Lesson, User, FinalExamQuestion } from '../types/index.ts';
 import { 
   ArrowLeft, 
   Video, 
@@ -10,11 +10,8 @@ import {
   Lock, 
   CheckCircle2, 
   AlertCircle, 
-  Play, 
   Bot, 
   Download, 
-  ChevronRight, 
-  HelpCircle,
   Award,
   FileCheck
 } from 'lucide-react';
@@ -42,11 +39,9 @@ export const Classroom: React.FC<ClassroomProps> = ({
   const [actionLoading, setActionLoading] = useState<boolean>(false);
   const [feedbackMessage, setFeedbackMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
 
-  // Estado do Teste de Fixação (Aula - 3 questões)
   const [quizAnswers, setQuizAnswers] = useState<Record<number, number>>({ 0: -1, 1: -1, 2: -1 });
   const [quizResult, setQuizResult] = useState<{ score: number; passed: boolean; feedback: string; explanation: string } | null>(null);
 
-  // Estado da Avaliação Final da Disciplina (10 questões)
   const [isFinalExamActive, setIsFinalExamActive] = useState<boolean>(false);
   const [finalExamQuestions, setFinalExamQuestions] = useState<FinalExamQuestion[]>([]);
   const [finalExamAnswers, setFinalExamAnswers] = useState<Record<number, number>>({});
@@ -54,7 +49,6 @@ export const Classroom: React.FC<ClassroomProps> = ({
   const [isDisciplineApproved, setIsDisciplineApproved] = useState<boolean>(false);
   const [finalGrade, setFinalGrade] = useState<number | null>(null);
 
-  // Carrega dados da disciplina e lições
   useEffect(() => {
     async function loadData() {
       try {
@@ -67,7 +61,6 @@ export const Classroom: React.FC<ClassroomProps> = ({
           setActiveLessonId(data.lessons[0].id);
         }
 
-        // Carrega progresso do usuário
         const progRes = await fetch('/api/v1/progress');
         const progData = await progRes.json();
 
@@ -81,7 +74,6 @@ export const Classroom: React.FC<ClassroomProps> = ({
         }
         setProgressMap(map);
 
-        // Verifica se a disciplina já possui aprovação na Avaliação Final
         const approval = progData.approvals?.find((a: any) => a.disciplineId === disciplineId && a.approved);
         if (approval) {
           setIsDisciplineApproved(true);
@@ -111,10 +103,21 @@ export const Classroom: React.FC<ClassroomProps> = ({
   const { discipline, lessons } = disciplineData;
   const currentLesson = lessons.find((l) => l.id === activeLessonId) || lessons[0];
 
-  // Verifica se todas as aulas da disciplina foram concluídas para liberar a Avaliação Final de 10 Questões
+  // Extrai o número da pasta a partir do localMaterialPath
+  const normalizePath = (path: string): string =>
+    path.replace(/\\/g, '/').replace(/\/+$/, '');
+
+  const getPaddedFromPath = (path: string): string => {
+    const folder = normalizePath(path).split('/').filter(Boolean).pop() || '';
+    const match = folder.match(/^(\d+)/);
+    return match ? match[1].padStart(2, '0') : '01';
+  };
+
+  const materialBase = normalizePath(discipline.localMaterialPath || '');
+  const padded = getPaddedFromPath(discipline.localMaterialPath || '');
+
   const areAllLessonsCompleted = lessons.every((l) => Boolean(progressMap[`${l.id}:5`]));
 
-  // Helper para verificar se um passo está liberado
   const isStepUnlocked = (stepNum: number) => {
     if (stepNum === 1) return true;
     return Boolean(progressMap[`${currentLesson.id}:${stepNum - 1}`]);
@@ -124,7 +127,6 @@ export const Classroom: React.FC<ClassroomProps> = ({
     return Boolean(progressMap[`${currentLesson.id}:${stepNum}`]);
   };
 
-  // Concluir Etapas 1, 2, 3 ou 5 no backend
   const handleCompleteStep = async (stepNum: number) => {
     try {
       setActionLoading(true);
@@ -165,7 +167,6 @@ export const Classroom: React.FC<ClassroomProps> = ({
     }
   };
 
-  // Submeter Teste de Fixação (Etapa 4 da Aula)
   const handleSubmitQuiz = async () => {
     try {
       setActionLoading(true);
@@ -209,7 +210,6 @@ export const Classroom: React.FC<ClassroomProps> = ({
     }
   };
 
-  // Abrir Avaliação Final de 10 Questões do Componente
   const handleOpenFinalExam = async () => {
     try {
       setActionLoading(true);
@@ -237,7 +237,6 @@ export const Classroom: React.FC<ClassroomProps> = ({
     }
   };
 
-  // Submeter Avaliação Final de 10 Questões
   const handleSubmitFinalExam = async () => {
     try {
       setActionLoading(true);
@@ -280,7 +279,7 @@ export const Classroom: React.FC<ClassroomProps> = ({
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Barra Superior da Sala */}
+      {/* Barra Superior */}
       <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center space-x-3">
           <button
@@ -295,7 +294,9 @@ export const Classroom: React.FC<ClassroomProps> = ({
               <span className="bg-emerald-100 text-[#006633] text-xs font-black px-2 py-0.5 rounded uppercase">
                 {discipline.code}
               </span>
-              <span className="text-xs font-semibold text-gray-500">Módulo {discipline.moduleId} • {discipline.hours}h</span>
+              <span className="text-xs font-semibold text-gray-500">
+                Módulo {discipline.moduleId} • {discipline.hours}h
+              </span>
               {isDisciplineApproved && (
                 <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-0.5 rounded flex items-center space-x-1">
                   <CheckCircle2 className="w-3 h-3" />
@@ -318,7 +319,7 @@ export const Classroom: React.FC<ClassroomProps> = ({
 
       {/* Grid Principal */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Coluna Esquerda: Aulas e Avaliação Final */}
+        {/* Coluna Esquerda */}
         <div className="lg:col-span-1 space-y-4">
           <div>
             <h2 className="text-xs font-extrabold text-gray-400 uppercase tracking-wider px-1 mb-2">
@@ -369,7 +370,7 @@ export const Classroom: React.FC<ClassroomProps> = ({
             </div>
           </div>
 
-          {/* Cartão de Avaliação Final do Componente (10 Questões - Obrigatória) */}
+          {/* Avaliação Final */}
           <div className="pt-2 border-t border-gray-200">
             <h2 className="text-xs font-extrabold text-gray-400 uppercase tracking-wider px-1 mb-2">
               Conclusão do Componente
@@ -411,16 +412,15 @@ export const Classroom: React.FC<ClassroomProps> = ({
             </button>
           </div>
 
-          {/* Diretório Local de Arquivos */}
+          {/* Diretório */}
           <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 text-[11px] text-gray-600 space-y-1">
             <span className="font-bold text-gray-800">Diretório de Armazenamento Local:</span>
-            <p className="font-mono text-[10px] text-emerald-800 break-all">{discipline.localMaterialPath}</p>
+            <p className="font-mono text-[10px] text-emerald-800 break-all">{materialBase}</p>
           </div>
         </div>
 
-        {/* Coluna Direita: Conteúdo Ativo (Aula Sequencial OU Avaliação Final) */}
+        {/* Coluna Direita */}
         <div className="lg:col-span-3 space-y-5">
-          {/* Feedback de Erro ou Sucesso */}
           {feedbackMessage && (
             <div
               className={`p-4 rounded-xl border text-xs flex items-center space-x-2 ${
@@ -438,7 +438,6 @@ export const Classroom: React.FC<ClassroomProps> = ({
             </div>
           )}
 
-          {/* SE AVALIAÇÃO FINAL ATIVA */}
           {isFinalExamActive ? (
             <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
               <div className="border-b border-gray-200 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -454,7 +453,6 @@ export const Classroom: React.FC<ClassroomProps> = ({
                 )}
               </div>
 
-              {/* 10 Questões Oficiais */}
               <div className="space-y-6">
                 {finalExamQuestions.map((q, qIdx) => (
                   <div key={q.id} className="border border-gray-200 rounded-xl p-4 space-y-3 bg-gray-50/40">
@@ -509,9 +507,8 @@ export const Classroom: React.FC<ClassroomProps> = ({
               </div>
             </div>
           ) : (
-            // AULA SEQUENCIAL NORMAL (5 ETAPAS)
             <>
-              {/* Barra de Progresso das 5 Etapas Obrigatórias */}
+              {/* Barra de Etapas */}
               <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs">
                 <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
                   Sequência Obrigatória da Aula — Conclusão Passo a Passo:
@@ -560,9 +557,10 @@ export const Classroom: React.FC<ClassroomProps> = ({
                 </div>
               </div>
 
-              {/* CONTEÚDO DA ETAPA ATIVA DA AULA */}
+              {/* Conteúdo da Etapa */}
               <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs min-h-[420px] flex flex-col justify-between">
-                {/* ETAPA 1: VÍDEO */}
+                
+                {/* ETAPA 1 */}
                 {activeStepNumber === 1 && (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between border-b border-gray-100 pb-3">
@@ -573,20 +571,15 @@ export const Classroom: React.FC<ClassroomProps> = ({
                       <span className="text-xs font-semibold text-gray-500">Carga estimada: 25 min</span>
                     </div>
 
-                    <div className="aspect-video bg-gray-900 rounded-xl overflow-hidden relative flex flex-col items-center justify-center text-white shadow-inner">
-                      <div className="absolute inset-0 bg-radial from-emerald-950/40 to-black/80"></div>
-                      <div className="relative z-10 text-center space-y-3 max-w-md px-4">
-                        <div className="w-14 h-14 rounded-full bg-emerald-600/90 hover:bg-emerald-500 text-white flex items-center justify-center mx-auto shadow-lg transition-transform hover:scale-105 cursor-pointer">
-                          <Play className="w-6 h-6 ml-1 text-white" />
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-sm text-white">{currentLesson.title}</h4>
-                          <div className="mt-2 inline-flex items-center space-x-1.5 px-3 py-1 rounded-md bg-amber-500/20 border border-amber-500/30 text-amber-200 text-[11px] font-medium">
-                            <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                            <span>Gravação audiovisual em planejamento instrucional • Roteiro e conceitos na Apostila (Passo 3)</span>
-                          </div>
-                        </div>
-                      </div>
+                    <div className="aspect-video bg-gray-900 rounded-xl overflow-hidden relative shadow-inner">
+                      <video
+                        key={`${materialBase}-${padded}`}
+                        controls
+                        className="w-full h-full object-contain"
+                        src={`${materialBase}/video-aula-${padded}.mp4`}
+                      >
+                        Seu navegador não suporta a reprodução de vídeo.
+                      </video>
                     </div>
 
                     <div className="text-xs text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-200">
@@ -605,7 +598,7 @@ export const Classroom: React.FC<ClassroomProps> = ({
                   </div>
                 )}
 
-                {/* ETAPA 2: SLIDES */}
+                {/* ETAPA 2 */}
                 {activeStepNumber === 2 && (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between border-b border-gray-100 pb-3">
@@ -624,19 +617,19 @@ export const Classroom: React.FC<ClassroomProps> = ({
                           Diagramas conceituais, esquemas e síntese visual dos tópicos da aula.
                         </p>
                         <p className="text-[11px] font-mono text-emerald-800 pt-1">
-                          {discipline.localMaterialPath}/slides-aula-01.pdf
+                          {materialBase}/slides-aula-{padded}.pdf
                         </p>
                       </div>
 
                       <a
-                        href={`${discipline.localMaterialPath}/slides-aula-01.pdf`}
+                        href={`${materialBase}/slides-aula-${padded}.pdf`}
                         target="_blank"
                         rel="noreferrer"
                         download
                         className="inline-flex items-center space-x-2 text-xs bg-white border border-emerald-300 hover:border-[#006633] px-3.5 py-2 rounded-lg text-emerald-800 font-bold transition-all shadow-xs cursor-pointer"
                       >
                         <Download className="w-3.5 h-3.5 text-emerald-700" />
-                        <span>Baixar Lâminas em PDF (slides-aula-01.pdf)</span>
+                        <span>Baixar Lâminas em PDF (slides-aula-{padded}.pdf)</span>
                       </a>
                     </div>
 
@@ -656,7 +649,7 @@ export const Classroom: React.FC<ClassroomProps> = ({
                   </div>
                 )}
 
-                {/* ETAPA 3: MATERIAL DIDÁTICO EM PDF */}
+                {/* ETAPA 3 */}
                 {activeStepNumber === 3 && (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between border-b border-gray-100 pb-3">
@@ -671,36 +664,78 @@ export const Classroom: React.FC<ClassroomProps> = ({
                       <div className="flex items-start space-x-3">
                         <FileText className="w-6 h-6 text-[#006633] mt-1 shrink-0" />
                         <div className="space-y-1">
-                          <h4 className="font-bold text-sm text-gray-900">Apostila Completa da Aula</h4>
+                          <h4 className="font-bold text-sm text-gray-900">Apostila Completa da Aula {padded}</h4>
                           <p className="text-xs text-gray-600 leading-relaxed">
                             Contém o aprofundamento teórico, tutoriais práticos em Python, referências bibliográficas e exercícios de fixação.
                           </p>
                           <p className="text-[11px] font-mono text-emerald-800 pt-1">
-                            {discipline.localMaterialPath}/apostila-aula-01.pdf
+                            {materialBase}/apostila-aula-{padded}.pdf
                           </p>
                         </div>
                       </div>
 
-                      <div className="pt-1">
-                        <a
-                          href={`${discipline.localMaterialPath}/apostila-aula-01.pdf`}
-                          target="_blank"
-                          rel="noreferrer"
-                          download
-                          className="inline-flex items-center space-x-2 text-xs bg-[#006633] hover:bg-[#004d25] text-white px-3.5 py-2 rounded-lg font-bold transition-colors shadow-xs cursor-pointer"
-                        >
-                          <Download className="w-3.5 h-3.5 text-white" />
-                          <span>Baixar Apostila Técnica em PDF (apostila-aula-01.pdf)</span>
-                        </a>
+                      <a
+                        href={`${materialBase}/apostila-aula-${padded}.pdf`}
+                        target="_blank"
+                        rel="noreferrer"
+                        download
+                        className="inline-flex items-center space-x-2 text-xs bg-[#006633] hover:bg-[#004d25] text-white px-3.5 py-2 rounded-lg font-bold transition-colors shadow-xs cursor-pointer"
+                      >
+                        <Download className="w-3.5 h-3.5 text-white" />
+                        <span>Baixar Apostila Técnica em PDF (apostila-aula-{padded}.pdf)</span>
+                      </a>
+                    </div>
+
+                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 space-y-4">
+                      <div className="flex items-start space-x-3">
+                        <FileText className="w-6 h-6 text-[#006633] mt-1 shrink-0" />
+                        <div className="space-y-1">
+                          <h4 className="font-bold text-sm text-gray-900">Material Complementar - Exemplos Práticos</h4>
+                          <p className="text-xs text-gray-600 leading-relaxed">
+                            Coleção de exemplos práticos, códigos comentados e casos de uso reais relacionados ao conteúdo da aula.
+                          </p>
+                          <p className="text-[11px] font-mono text-emerald-800 pt-1">
+                            {materialBase}/material-complementar-{padded}.pdf
+                          </p>
+                        </div>
                       </div>
 
-                      <div className="bg-white p-4 rounded-lg border border-gray-200 text-xs text-gray-700 space-y-2">
-                        <p className="font-bold text-gray-900">Tópicos Abordados no Texto:</p>
-                        <ul className="list-disc list-inside space-y-1 text-gray-600 pl-1">
-                          <li>Princípios e fundamentos da disciplina {discipline.title}</li>
-                          <li>Competências técnicas oficiais: {discipline.competencies.join(', ')}</li>
-                        </ul>
+                      <a
+                        href={`${materialBase}/material-complementar-${padded}.pdf`}
+                        target="_blank"
+                        rel="noreferrer"
+                        download
+                        className="inline-flex items-center space-x-2 text-xs bg-[#006633] hover:bg-[#004d25] text-white px-3.5 py-2 rounded-lg font-bold transition-colors shadow-xs cursor-pointer"
+                      >
+                        <Download className="w-3.5 h-3.5 text-white" />
+                        <span>Baixar Material Complementar (material-complementar-{padded}.pdf)</span>
+                      </a>
+                    </div>
+
+                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 space-y-4">
+                      <div className="flex items-start space-x-3">
+                        <FileText className="w-6 h-6 text-[#006633] mt-1 shrink-0" />
+                        <div className="space-y-1">
+                          <h4 className="font-bold text-sm text-gray-900">Referências Bibliográficas e Exercícios</h4>
+                          <p className="text-xs text-gray-600 leading-relaxed">
+                            Lista de referências recomendadas, artigos e exercícios adicionais para aprofundamento.
+                          </p>
+                          <p className="text-[11px] font-mono text-emerald-800 pt-1">
+                            {materialBase}/referencias-exercicios-{padded}.pdf
+                          </p>
+                        </div>
                       </div>
+
+                      <a
+                        href={`${materialBase}/referencias-exercicios-${padded}.pdf`}
+                        target="_blank"
+                        rel="noreferrer"
+                        download
+                        className="inline-flex items-center space-x-2 text-xs bg-[#006633] hover:bg-[#004d25] text-white px-3.5 py-2 rounded-lg font-bold transition-colors shadow-xs cursor-pointer"
+                      >
+                        <Download className="w-3.5 h-3.5 text-white" />
+                        <span>Baixar Referências e Exercícios (referencias-exercicios-{padded}.pdf)</span>
+                      </a>
                     </div>
 
                     <div className="text-xs text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-200">
@@ -719,7 +754,7 @@ export const Classroom: React.FC<ClassroomProps> = ({
                   </div>
                 )}
 
-                {/* ETAPA 4: TESTE DE FIXAÇÃO DA AULA (3 QUESTÕES) */}
+                {/* ETAPA 4 */}
                 {activeStepNumber === 4 && (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between border-b border-gray-100 pb-3">
@@ -731,7 +766,6 @@ export const Classroom: React.FC<ClassroomProps> = ({
                     </div>
 
                     <div className="space-y-4">
-                      {/* Questão 1 */}
                       <div className="border border-gray-200 rounded-xl p-4 space-y-3 bg-gray-50/40">
                         <p className="text-xs font-bold text-gray-900">
                           1. No contexto de {discipline.title}, qual a principal finalidade da organização modular dos componentes de IA?
@@ -763,7 +797,6 @@ export const Classroom: React.FC<ClassroomProps> = ({
                         </div>
                       </div>
 
-                      {/* Questão 2 */}
                       <div className="border border-gray-200 rounded-xl p-4 space-y-3 bg-gray-50/40">
                         <p className="text-xs font-bold text-gray-900">
                           2. Qual a regra fundamental de segurança e arquitetura ao implementar agentes educacionais de inteligência artificial?
@@ -795,7 +828,6 @@ export const Classroom: React.FC<ClassroomProps> = ({
                         </div>
                       </div>
 
-                      {/* Questão 3 */}
                       <div className="border border-gray-200 rounded-xl p-4 space-y-3 bg-gray-50/40">
                         <p className="text-xs font-bold text-gray-900">
                           3. Por que a verificação de dependências de desbloqueio sequencial deve ser realizada obrigatoriamente no backend?
@@ -853,7 +885,7 @@ export const Classroom: React.FC<ClassroomProps> = ({
                   </div>
                 )}
 
-                {/* ETAPA 5: LIBERAÇÃO DA PRÓXIMA AULA */}
+                {/* ETAPA 5 */}
                 {activeStepNumber === 5 && (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between border-b border-gray-100 pb-3">
@@ -872,7 +904,6 @@ export const Classroom: React.FC<ClassroomProps> = ({
                       <p className="text-xs text-emerald-800 max-w-md mx-auto">
                         Todas as 4 etapas prévias foram validadas no servidor. A próxima aula da disciplina está liberada para acesso imediato.
                       </p>
-
                       <div className="pt-2 text-[11px] text-emerald-700 font-mono">
                         Registro de conclusão persistido de forma idempotente no PostgreSQL.
                       </div>
