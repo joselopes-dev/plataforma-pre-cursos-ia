@@ -26,7 +26,6 @@ function generateValidPDF(title: string, author: string, pages: Array<{ header: 
     
     objects.push(`${pageObjNum} 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents ${contentObjNum} 0 R /Resources << /Font << /F1 ${fontObjNum} 0 R >> >> >>\nendobj`);
     
-    // Converte texto em comandos de desenho de texto no fluxo PDF com aviso inequívoco de material experimental
     const disclaimerL1 = 'AVISO: MATERIAL DIDATICO EXPERIMENTAL DE DESENVOLVIMENTO';
     const disclaimerL2 = 'AGUARDANDO HOMOLOGACAO INSTITUCIONAL';
     const disclaimerL3 = 'Este conteudo destina-se a validacao tecnica da plataforma e nao substitui apostilas oficialmente aprovadas pela instituicao.';
@@ -88,7 +87,6 @@ export const ALL_DISCIPLINES_MATERIALS = [
   // =========================================================================
   {
     dir: 'modulo-1/01-fundamentos',
-    pdfName: 'apostila-fundamentos-sistemas-linux.pdf',
     title: 'INF-101: Fundamentos de Informatica e Linux CLI',
     pages: [
       {
@@ -107,7 +105,6 @@ export const ALL_DISCIPLINES_MATERIALS = [
   },
   {
     dir: 'modulo-1/02-logica',
-    pdfName: 'apostila-logica-algoritmos.pdf',
     title: 'LOG-102: Logica de Programacao e Algoritmos',
     pages: [
       {
@@ -122,7 +119,6 @@ export const ALL_DISCIPLINES_MATERIALS = [
   },
   {
     dir: 'modulo-1/03-python',
-    pdfName: 'apostila-python-aplicado-ia.pdf',
     title: 'PYTHON-103: Programacao em Python Aplicada a IA',
     pages: [
       {
@@ -141,7 +137,6 @@ export const ALL_DISCIPLINES_MATERIALS = [
   },
   {
     dir: 'modulo-1/04-banco-dados',
-    pdfName: 'apostila-bancos-dados-ia.pdf',
     title: 'BD-104: Bancos de Dados Relacionais e Vetoriais',
     pages: [
       {
@@ -156,7 +151,6 @@ export const ALL_DISCIPLINES_MATERIALS = [
   },
   {
     dir: 'modulo-1/05-matematica-estatistica',
-    pdfName: 'apostila-matematica-estatistica-ia.pdf',
     title: 'MAT-105: Matematica Computacional e Estatistica para IA',
     pages: [
       {
@@ -171,7 +165,6 @@ export const ALL_DISCIPLINES_MATERIALS = [
   },
   {
     dir: 'modulo-1/06-fundamentos-ia',
-    pdfName: 'apostila-fundamentos-ia.pdf',
     title: 'IA-106: Introducao e Fundamentos da Inteligencia Artificial',
     pages: [
       {
@@ -190,7 +183,6 @@ export const ALL_DISCIPLINES_MATERIALS = [
   // =========================================================================
   {
     dir: 'modulo-2/07-python-ciencia-dados',
-    pdfName: 'apostila-python-ciencia-dados.pdf',
     title: 'CD-201: Python para Ciencia de Dados',
     pages: [
       {
@@ -213,7 +205,6 @@ export const ALL_DISCIPLINES_MATERIALS = [
   },
   {
     dir: 'modulo-2/08-ml-aplicado',
-    pdfName: 'apostila-ml-aplicado.pdf',
     title: 'MLA-202: Machine Learning Aplicado',
     pages: [
       {
@@ -236,7 +227,6 @@ export const ALL_DISCIPLINES_MATERIALS = [
   },
   {
     dir: 'modulo-2/09-deep-learning',
-    pdfName: 'apostila-deep-learning.pdf',
     title: 'DL-203: Redes Neurais Artificiais e Deep Learning',
     pages: [
       {
@@ -259,7 +249,6 @@ export const ALL_DISCIPLINES_MATERIALS = [
   },
   {
     dir: 'modulo-2/10-pln-chatbots',
-    pdfName: 'apostila-pln-chatbots.pdf',
     title: 'PLN-204: Processamento de Linguagem Natural e Chatbots',
     pages: [
       {
@@ -282,7 +271,6 @@ export const ALL_DISCIPLINES_MATERIALS = [
   },
   {
     dir: 'modulo-2/11-metodologia',
-    pdfName: 'apostila-metodologia-tecnica.pdf',
     title: 'MET-205: Metodologia para Elaboracao de Producoes Tecnicas',
     pages: [
       {
@@ -305,7 +293,6 @@ export const ALL_DISCIPLINES_MATERIALS = [
   },
   {
     dir: 'modulo-2/12-pratica-supervisionada-1',
-    pdfName: 'apostila-pratica-supervisionada-1.pdf',
     title: 'PPS-206: Pratica Profissional Supervisionada I',
     pages: [
       {
@@ -332,7 +319,6 @@ export const ALL_DISCIPLINES_MATERIALS = [
   // =========================================================================
   {
     dir: 'modulo-3/13-seguranca-lgpd',
-    pdfName: 'apostila-seguranca-lgpd-dados.pdf',
     title: 'SEG-301: Seguranca, Governanca de Dados e LGPD Aplicada',
     pages: [
       {
@@ -355,7 +341,6 @@ export const ALL_DISCIPLINES_MATERIALS = [
   },
   {
     dir: 'modulo-3/14-engenharia-software-ia',
-    pdfName: 'apostila-engenharia-software-ia.pdf',
     title: 'ES-302: Engenharia de Software para Sistemas de IA',
     pages: [
       {
@@ -378,7 +363,6 @@ export const ALL_DISCIPLINES_MATERIALS = [
   },
   {
     dir: 'modulo-3/15-mlops-deploy',
-    pdfName: 'apostila-mlops-deploy.pdf',
     title: 'MLO-303: MLOps e Praticas de Deploy Continuo',
     pages: [
       {
@@ -401,7 +385,6 @@ export const ALL_DISCIPLINES_MATERIALS = [
   },
   {
     dir: 'modulo-3/16-assistentes-ia',
-    pdfName: 'apostila-assistentes-ia.pdf',
     title: 'ASS-304: Planejamento de Assistentes em Inteligencia Artificial',
     pages: [
       {
@@ -424,7 +407,6 @@ export const ALL_DISCIPLINES_MATERIALS = [
   },
   {
     dir: 'modulo-3/17-llms-ia',
-    pdfName: 'apostila-llms-inteligencia-artificial.pdf',
     title: 'LLM-305: LLMs e Inteligencia Artificial Generativa',
     pages: [
       {
@@ -447,7 +429,6 @@ export const ALL_DISCIPLINES_MATERIALS = [
   },
   {
     dir: 'modulo-3/18-visao-computacional',
-    pdfName: 'apostila-visao-computacional.pdf',
     title: 'VIS-306: Visao Computacional Aplicada',
     pages: [
       {
@@ -470,7 +451,6 @@ export const ALL_DISCIPLINES_MATERIALS = [
   },
   {
     dir: 'modulo-3/19-gestao-projetos-ia',
-    pdfName: 'apostila-gestao-projetos-ia.pdf',
     title: 'GP-307: Gestao de Projetos em Inteligencia Artificial',
     pages: [
       {
@@ -493,7 +473,6 @@ export const ALL_DISCIPLINES_MATERIALS = [
   },
   {
     dir: 'modulo-3/20-pratica-supervisionada-2',
-    pdfName: 'apostila-pratica-supervisionada-2.pdf',
     title: 'PPS-308: Pratica Profissional Supervisionada II (TCC Aplicado)',
     pages: [
       {
@@ -517,10 +496,11 @@ export const ALL_DISCIPLINES_MATERIALS = [
 ];
 
 /**
- * Cria os materiais didáticos em PDF e TXT para todas as 20 disciplinas do Curso Técnico em IA
+ * Cria os materiais didáticos em PDF e TXT para todas as 20 disciplinas
+ * usando a nomenclatura real do projeto (apostila-aula-XX.pdf etc.)
  */
 export function seedAllCourseMaterials() {
-  console.log('📚 Gerando materiais didáticos experimentais do curso (aguardando homologação institucional)...');
+  console.log('📚 Gerando materiais didáticos compatíveis com a estrutura real do projeto...');
 
   for (const disc of ALL_DISCIPLINES_MATERIALS) {
     const fullDirPath = path.join(rootCoursesDir, disc.dir);
@@ -528,61 +508,84 @@ export function seedAllCourseMaterials() {
       fs.mkdirSync(fullDirPath, { recursive: true });
     }
 
-    // 1. Gera o arquivo PDF com estrutura PDF 1.4 válida e tarja de aviso experimental
-    const pdfPath = path.join(fullDirPath, disc.pdfName);
-    const pdfBuffer = generateValidPDF(disc.title, 'Ambiente Experimental de Validacao Tecnica', disc.pages);
-    fs.writeFileSync(pdfPath, pdfBuffer);
+    // Extrai o número da pasta (01, 02, 03...)
+    const folderName = path.basename(disc.dir); // "01-fundamentos"
+    const match = folderName.match(/^(\d+)/);
+    const num = match ? match[1].padStart(2, '0') : '01';
 
-    // 2. Garante a existência de apostila-aula-01.pdf (material referenciado pelas aulas nos passos)
-    const aula01PdfPath = path.join(fullDirPath, 'apostila-aula-01.pdf');
-    fs.writeFileSync(aula01PdfPath, pdfBuffer);
+    // =====================================================
+    // 1. Apostila principal
+    // =====================================================
+    const apostilaPdf = generateValidPDF(disc.title, 'Curso Técnico em IA', disc.pages);
+    fs.writeFileSync(path.join(fullDirPath, `apostila-aula-${num}.pdf`), apostilaPdf);
 
-    // 2.1 Garante a existência de slides-aula-01.pdf (lâminas de aula referenciadas no Passo 2)
-    const slidesPdfPath = path.join(fullDirPath, 'slides-aula-01.pdf');
+    // =====================================================
+    // 2. Material complementar
+    // =====================================================
+    const complementarPages = disc.pages.slice(0, Math.min(2, disc.pages.length));
+    const complementarPdf = generateValidPDF(
+      `${disc.title} - Material Complementar`,
+      'Curso Técnico em IA',
+      complementarPages
+    );
+    fs.writeFileSync(path.join(fullDirPath, `material-complementar-${num}.pdf`), complementarPdf);
+
+    // =====================================================
+    // 3. Referências e exercícios
+    // =====================================================
+    const refsPdf = generateValidPDF(
+      `${disc.title} - Referências e Exercícios`,
+      'Curso Técnico em IA',
+      [
+        {
+          header: 'Referências Bibliográficas e Exercícios de Fixação',
+          text: 'Lista de referências oficiais, artigos recomendados e exercícios adicionais para aprofundamento da disciplina.'
+        }
+      ]
+    );
+    fs.writeFileSync(path.join(fullDirPath, `referencias-exercicios-${num}.pdf`), refsPdf);
+
+    // =====================================================
+    // 4. Slides
+    // =====================================================
     const slidesPages = disc.pages.map((p, idx) => ({
-      header: `LAMINA DIDATICA ${idx + 1}: ${p.header.toUpperCase()}`,
-      text: `SINTESE CONCEITUAL E DIAGRAMAS:\n${p.text}`,
+      header: `LÂMINA ${idx + 1}: ${p.header.toUpperCase()}`,
+      text: `SÍNTESE CONCEITUAL:\n${p.text}`,
     }));
-    const slidesBuffer = generateValidPDF(`SLIDES: ${disc.title}`, 'Corpo Docente - Laminas de Aula', slidesPages);
-    fs.writeFileSync(slidesPdfPath, slidesBuffer);
+    const slidesPdf = generateValidPDF(`SLIDES: ${disc.title}`, 'Corpo Docente', slidesPages);
+    fs.writeFileSync(path.join(fullDirPath, `slides-aula-${num}.pdf`), slidesPdf);
 
-    // 3. Remove eventual arquivo legado com nomenclatura oficial antiga se presente
-    const legacyOfficialTxt = path.join(fullDirPath, 'material-oficial-estudo.txt');
-    if (fs.existsSync(legacyOfficialTxt)) {
-      try {
-        fs.unlinkSync(legacyOfficialTxt);
-      } catch {}
-    }
-
-    // 4. Gera a versão em texto estruturado com identificação inequívoca de material experimental
-    const txtPath = path.join(fullDirPath, 'material-estudo-experimental.txt');
-    let txtContent = `# ${disc.title.toUpperCase()}\n`;
-    txtContent += `# MATERIAL DIDÁTICO EXPERIMENTAL DE DESENVOLVIMENTO — AGUARDANDO HOMOLOGAÇÃO INSTITUCIONAL. Este conteúdo destina-se à validação técnica da plataforma e não substitui apostilas oficialmente aprovadas pela instituição.\n\n`;
+    // =====================================================
+    // 5. Arquivos de texto (para RAG)
+    // =====================================================
+    let txtContent = `# ${disc.title.toUpperCase()}\n\n`;
+    txtContent += `MATERIAL DIDÁTICO EXPERIMENTAL — AGUARDANDO HOMOLOGAÇÃO INSTITUCIONAL.\n\n`;
     disc.pages.forEach((p, idx) => {
       txtContent += `--- Página ${idx + 1}: ${p.header}\n${p.text}\n\n`;
     });
-    fs.writeFileSync(txtPath, txtContent, 'utf8');
 
-    // 5. Gera também apostila-aula-01.txt para compatibilidade e isolamento de RAG
-    const aula01TxtPath = path.join(fullDirPath, 'apostila-aula-01.txt');
-    fs.writeFileSync(aula01TxtPath, txtContent, 'utf8');
+    fs.writeFileSync(path.join(fullDirPath, `apostila-aula-${num}.txt`), txtContent, 'utf8');
+    fs.writeFileSync(path.join(fullDirPath, 'material-estudo-experimental.txt'), txtContent, 'utf8');
 
-    // 6. Gera o README.md da disciplina
-    const readmePath = path.join(fullDirPath, 'README.md');
-    const readmeContent = `# ${disc.title}\n\nAcervo didático local para estudo, laboratórios e suporte via Tutor IA com RAG.\n\n` +
-      `**Aviso:** Material didático experimental de desenvolvimento — aguardando homologação institucional.\n\n` +
-      `Arquivos disponíveis no diretório:\n` +
-      `- \`${disc.pdfName}\`: Apostila técnica completa em formato PDF 1.4\n` +
-      `- \`apostila-aula-01.pdf\`: Material de apoio da aula 01\n` +
-      `- \`slides-aula-01.pdf\`: Lâminas didáticas sintetizadas em PDF para aula 01\n` +
-      `- \`material-estudo-experimental.txt\`: Texto estruturado para indexação vetorial e lexical\n` +
-      `- \`apostila-aula-01.txt\`: Transcrição textual da aula 01\n`;
-    fs.writeFileSync(readmePath, readmeContent, 'utf8');
+    // =====================================================
+    // 6. README
+    // =====================================================
+    const readmeContent =
+      `# ${disc.title}\n\n` +
+      `Acervo didático local para estudo e suporte via Tutor IA.\n\n` +
+      `**Arquivos disponíveis:**\n` +
+      `- \`apostila-aula-${num}.pdf\`\n` +
+      `- \`material-complementar-${num}.pdf\`\n` +
+      `- \`referencias-exercicios-${num}.pdf\`\n` +
+      `- \`slides-aula-${num}.pdf\`\n` +
+      `- \`apostila-aula-${num}.txt\`\n`;
 
-    console.log(`✅ [SEED] Gerados materiais didáticos experimentais para ${disc.dir}: ${disc.pdfName}, apostila-aula-01.pdf, slides-aula-01.pdf e arquivos de texto`);
+    fs.writeFileSync(path.join(fullDirPath, 'README.md'), readmeContent, 'utf8');
+
+    console.log(`✅ [${num}] ${disc.dir} → arquivos *-aula-${num}.* gerados`);
   }
 
-  console.log('🎉 Materiais didáticos experimentais de todas as 20 disciplinas gerados com sucesso!');
+  console.log('🎉 Seed concluído com nomenclatura compatível com o frontend!');
 }
 
 // Se executado diretamente
